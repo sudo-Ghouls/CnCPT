@@ -1,2 +1,2 @@
 # CnCPT
-Compositional aNd Course of action Pathing Tool
+Compositional aNd Course of action Pathfinding Tool
