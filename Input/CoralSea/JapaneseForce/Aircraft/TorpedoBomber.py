@@ -2,8 +2,15 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from CnCPT.Input.CoralSea.BaseClasses.Aircraft import Aircraft
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Input.CoralSea.JapaneseForce.Sensors.Visual import VisualAir
+from Input.CoralSea.JapaneseForce.Weapons.air_to_surface import AirLaunchedTorpedo
+from Simulation.Logic.ChildLogic import return_to_parent
+from Simulation.Logic.General import determine_priority_target_contact, pursue_target
+from Simulation.Logic.Patrol import patrol
+from Simulation.Units.State import State
+from Simulation.Utility.Conversions import kts_to_ms
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class TorpedoBomber(Aircraft):
@@ -11,6 +18,51 @@ class TorpedoBomber(Aircraft):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
                          side=SideEnum.RED)
         self.cost = 200
+        self.refueling_length = 10 * 60 * 60  # 10 hour
+        self.add_sensor(VisualAir())
+        self.add_weapon(AirLaunchedTorpedo, 1)
+        if behavior is None:
+            self.my_brain = self.behavior_baseline
+
+    @staticmethod
+    def behavior_baseline(unit, simulation_manager):
+        if unit.kinematics.get_range_traveled() > unit.kinematics.get_max_range():
+            unit.state = State.RTB
+
+        if unit.state is State.DOCKED_REFUELING:
+            if simulation_manager.now - unit.state_change_time > unit.refueling_length:
+                unit.state = State.DOCKED_READY
+
+        if unit.state is State.SEARCH:
+            if bool(unit.contacts) and unit.target is None:
+                target_contact = determine_priority_target_contact(unit.contacts, method='range',
+                                                                   excluded_classes=Aircraft)
+                if unit.target is not None:
+                    unit.target = target_contact.target_name_truth
+            if unit.target:
+                target_contact = unit.contacts.get(unit.target, None)
+                if target_contact is not None:
+                    unit.state = State.ENGAGE
+                else:
+                    unit.target = None
+            else:
+                patrol(unit)
+
+        if unit.state is State.ENGAGE:
+            if bool(unit.contacts) and unit.target is None:
+                target_contact = determine_priority_target_contact(unit.contacts, method='range')
+                if unit.target is not None:
+                    unit.target = target_contact.target_name_truth
+            if unit.target:
+                target_contact = unit.contacts.get(unit.target, None)
+                if target_contact is not None:
+                    pursue_target(unit, target_contact, standoff_range_m=0)
+                else:
+                    unit.target = None
+            else:
+                patrol(unit)
+        if unit.state is State.RTB:
+            return_to_parent(unit, simulation_manager.now)
 
     @staticmethod
     def behavior_aggressive(unit, simulation_manager):
@@ -20,12 +72,10 @@ class TorpedoBomber(Aircraft):
     def behavior_passive(unit, simulation_manager):
         pass
 
-    @staticmethod
-    def behavior_baseline(unit, simulation_manager):
-        pass
-
 
 class NakajimaB5NType97(TorpedoBomber):
     def __init__(self, name="NakajimaB5NType97", behavior=TorpedoBomber.behavior_baseline, location=None,
                  spawn_polygon=None):
         super().__init__(name, behavior, location, spawn_polygon)
+        self.kinematics.set_max_speed(kts_to_ms(204))  # Cruise speed from https://en.wikipedia.org/wiki/Nakajima_B5N
+        self.kinematics.set_max_range(max_range=978_000)

@@ -2,8 +2,8 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from CnCPT.Simulation.UnitBehavior import BasicBehavior
-from CnCPT.Simulation.Units.Unit import Unit
+from Simulation.Units.core import BasicBehavior
+from Simulation.Units.Unit import Unit
 
 
 class Ship(Unit):

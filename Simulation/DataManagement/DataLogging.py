@@ -4,10 +4,44 @@
 
 import json
 import os
+import sys
 
 
 def truncate_6(f):
     return int(f * 1e6) / 1e6
+
+
+def log(simulation_manager):
+    """
+
+    :return:
+    """
+
+    simulation_manager.data_logger.dump_units_to_file(simulation_manager)
+    simulation_manager.data_logger.update_formatted_unit_data(simulation_manager)
+
+
+def update_status_bar(simulation_manager):
+    """
+
+    """
+    fraction_complete = float(simulation_manager._now - simulation_manager.start_time) / (
+            simulation_manager.end_time - simulation_manager.start_time)
+    status = ""
+    if fraction_complete >= 1:
+        status = "Done.\r\n"
+    num_blocks = int(round(25 * fraction_complete))
+    bar_string = "#" * num_blocks + "-" * (25 - num_blocks)
+    text_1 = "\r[{0}] {1:5.1f}%".format(bar_string, fraction_complete * 100)
+    text_time = simulation_manager._now
+    speed = ((simulation_manager._now - simulation_manager.start_time) / simulation_manager.elapsed_real_time)
+    text_2 = "[Time: {0}] [Speed: {1} x Realtime] {2}".format(text_time, speed, status)
+    text = text_1 + text_2
+    try:
+        sys.stdout.write((text).encode("utf8"))
+    except TypeError:
+        sys.stdout.write(text)
+    sys.stdout.flush()
 
 
 class DataLogger:
@@ -66,5 +100,5 @@ class DataLogger:
         self.unit_data_file.close()
 
         self.formatted_unit_data["MapBounds"] = list(simulation_manager.Geography.map.bounds)
-        self.formatted_unit_data_file.write(json.dumps(self.formatted_unit_data,indent=4))
+        self.formatted_unit_data_file.write(json.dumps(self.formatted_unit_data, indent=4))
         self.formatted_unit_data_file.close()

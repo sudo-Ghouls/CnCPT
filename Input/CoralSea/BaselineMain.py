@@ -2,9 +2,9 @@
 # This file was created in support of the CnCPT Thesis
 # Fall 2020 - EM.THE
 
-from CnCPT.Input.CoralSea.JapaneseForce.BaselineJapaneseForceLaydown import BaselineJapaneseForce
-from CnCPT.Input.CoralSea.UnitedStatesForce.BaselineUSForceLaydown import BaselineUSForce
-from CnCPT.Simulation.RunController import RunController
+from Input.CoralSea.JapaneseForce.BaselineJapaneseForceLaydown import BaselineJapaneseForce
+from Input.CoralSea.UnitedStatesForce.BaselineUSForceLaydown import BaselineUSForce
+from Simulation.RunController import RunController
 
 if __name__ == "__main__":
     controls = {"architecture_name": "Baseline",

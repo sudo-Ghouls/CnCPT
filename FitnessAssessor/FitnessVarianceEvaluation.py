@@ -3,6 +3,5 @@
 # Fall 2020 - EM.THE
 
 
-class FitnessVarianceEvaluation:
-    def __init__(self):
-        pass
+def process(model_features, labels_log, labels_reg):
+    pass

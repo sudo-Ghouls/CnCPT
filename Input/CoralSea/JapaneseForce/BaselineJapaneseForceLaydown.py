@@ -1,13 +1,13 @@
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Carrier import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Destroyer import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Gunboat import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.HeavyCruiser import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.LightCarrier import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.LightCrusier import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Minelayer import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Tanker import *
-from CnCPT.Input.CoralSea.JapaneseForce.Ships.Transport import *
-from CnCPT.Simulation.Units.UnitGroup import UnitGroup
+from Input.CoralSea.JapaneseForce.Ships.Carrier import *
+from Input.CoralSea.JapaneseForce.Ships.Destroyer import *
+from Input.CoralSea.JapaneseForce.Ships.Gunboat import *
+from Input.CoralSea.JapaneseForce.Ships.HeavyCruiser import *
+from Input.CoralSea.JapaneseForce.Ships.LightCarrier import *
+from Input.CoralSea.JapaneseForce.Ships.LightCrusier import *
+from Input.CoralSea.JapaneseForce.Ships.Minelayer import *
+from Input.CoralSea.JapaneseForce.Ships.Tanker import *
+from Input.CoralSea.JapaneseForce.Ships.Transport import *
+from Simulation.Units.UnitGroup import UnitGroup
 
 
 # Key Routes

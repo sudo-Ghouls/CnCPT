@@ -7,10 +7,12 @@ from enum import Enum, auto
 
 
 class State(Enum):
-    DOCKED = auto()
+    DOCKED_READY = auto()
+    DOCKED_REFUELING = auto()
     PATROL = auto()
     ENGAGE = auto()
     SEARCH = auto()
     EVADE = auto()
     TRANSIT = auto()
+    RTB = auto()
     NONE = auto()

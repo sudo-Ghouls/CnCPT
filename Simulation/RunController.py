@@ -13,14 +13,14 @@ from pstats import SortKey
 
 import numpy as np
 
-from CnCPT.Simulation.Communication.Network import auto_network_architectures
-from CnCPT.Simulation.Constants import intialize_constants
-from CnCPT.Simulation.PostProcessing.Core import post_process
-from CnCPT.Simulation.SimulationManager import SimulationManager
+from Simulation.Communication.Network import auto_network_architectures
+from Simulation.Utility.Constants import intialize_constants
+from Simulation.DataManagement.PostProcessing import post_process
+from Simulation.SimulationManager import SimulationManager
 
 
 class RunController:
-    """
+    """ 
 
     """
 

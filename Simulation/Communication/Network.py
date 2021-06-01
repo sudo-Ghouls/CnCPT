@@ -20,6 +20,8 @@ class Network:
         self.name = name
         self.units = units
         self.unit_map = {u.name: u for u in self.units}
+        for unit in units:
+            unit.network = self
 
     def send_message(self, message, sender, receiver):
         """
@@ -29,7 +31,7 @@ class Network:
         :param receiver:
         :return:
         """
-        new_message = deepcopy(message)
+        new_message = message
         new_message.network = self
         new_message.sender = sender
         new_message.receiver = receiver

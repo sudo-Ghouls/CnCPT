@@ -2,9 +2,9 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from CnCPT.Input.CoralSea.BaseClasses.Ship import Ship
-from CnCPT.Simulation.UnitBehavior import BasicBehavior
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.core import BasicBehavior
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class HeavyCruiser(Ship):

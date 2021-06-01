@@ -4,20 +4,22 @@
 
 import itertools
 
-from CnCPT.Input.CoralSea.BaseClasses.Ship import Ship
-from CnCPT.Input.CoralSea.UnitedStatesForce.Aircraft.DiveBomber import DouglasSBDDauntless
-from CnCPT.Input.CoralSea.UnitedStatesForce.Aircraft.Fighter import GrummanF4F3Wildcat
-from CnCPT.Input.CoralSea.UnitedStatesForce.Aircraft.TorpedoBomber import DouglasTBDDevastator
-from CnCPT.Input.CoralSea.UnitedStatesForce.Sensors.BasicRadarCXAM import BasicRadarCXAM
-from CnCPT.Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Cruiser import Cruiser
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Destroyer import Destroyer
-from CnCPT.Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
-from CnCPT.Simulation.GeographyPhysics import Geography
-from CnCPT.Simulation.Units.State import State
-from CnCPT.Simulation.Utility.Area import Area
-from CnCPT.Simulation.Utility.Conversions import kts_to_ms
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Input.CoralSea.BaseClasses.Ship import Ship
+from Input.CoralSea.UnitedStatesForce.Aircraft.DiveBomber import DouglasSBDDauntless
+from Input.CoralSea.UnitedStatesForce.Aircraft.Fighter import GrummanF4F3Wildcat
+from Input.CoralSea.UnitedStatesForce.Aircraft.TorpedoBomber import DouglasTBDDevastator
+from Input.CoralSea.UnitedStatesForce.Sensors.BasicRadarCXAM import BasicRadarCXAM
+from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
+from Input.CoralSea.UnitedStatesForce.Ships.Cruiser import Cruiser
+from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import Destroyer
+from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
+from Simulation.GeographyPhysics import Geography
+from Simulation.Logic.ChildLogic import undock
+from Simulation.Logic.General import is_day
+from Simulation.Units.State import State
+from Simulation.Utility.Area import Area
+from Simulation.Utility.Conversions import kts_to_ms
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class Carrier(Ship):
@@ -39,8 +41,9 @@ class Carrier(Ship):
 
         # Enemy Info
         self.enemy_bearing = 0
-        self.enemy_distance = 100
+        self.enemy_distance = 200
         self.target_located = False
+        self.target_location = None
 
     @staticmethod
     def behavior_aggressive(unit, simulation_manager):
@@ -65,16 +68,27 @@ class Carrier(Ship):
     def behavior_baseline(unit, simulation_manager):
         if unit.group.leader is unit:
             # Morning Op
-            if unit.search_mission is None:
-                unit.deploy_search_mission(unit.enemy_bearing, unit.enemy_distance,
-                                           DouglasSBDDauntless, 10, simulation_manager.now)
+            if is_day(simulation_manager.now):
+                if unit.search_mission is None:
+                    unit.deploy_search_mission(unit.enemy_bearing, unit.enemy_distance,
+                                               DouglasSBDDauntless, 10, simulation_manager.now)
+                else:
+                    search_aircraft = [aircraft for aircraft in unit.my_aircraft if
+                                       aircraft.state is State.SEARCH and aircraft.alive]
+                    if len(search_aircraft) < 10:
+                        unit.search_mission = None
 
-            if unit.target_located is True:
-                air_wing_composition = {DouglasSBDDauntless: 35,
-                                        GrummanF4F3Wildcat: 17,
-                                        DouglasTBDDevastator: 10}
-                unit.deploy_carrier_air_wing(unit.enemy_bearing, unit.enemy_distance, air_wing_composition,
-                                             simulation_manager.now)
+                if unit.target_located is True and unit.air_wing_mission is None:
+                    air_wing_composition = {DouglasSBDDauntless: 35,
+                                            GrummanF4F3Wildcat: 17,
+                                            DouglasTBDDevastator: 10}
+                    unit.deploy_carrier_air_wing(unit.target_location, air_wing_composition,
+                                                 simulation_manager.now)
+                else:
+                    air_wing_aircraft = [aircraft for aircraft in unit.my_aircraft if
+                                         aircraft.state is State.ENGAGE and aircraft.alive]
+                    if len(air_wing_aircraft) < 10:
+                        unit.air_wing_mission = None
 
             # 06:19 - Believing Takagi's carrier force was somewhere north of him, in the vicinity of the Louisiades,
             # beginning at 06:19, Fletcher directed Yorktown to send 10 Douglas SBD Dauntless dive bombers as scouts to
@@ -105,20 +119,35 @@ class Carrier(Ship):
         center = Geography.reckon(distance, bearing, carrier_location[0], carrier_location[1], unit="nmi")
         patrol_area = Area.create_patrol_area_from_center(center, 100, 100, unit='nmi')
         docked_aircraft = [aircraft for aircraft in self.my_aircraft if
-                           aircraft.state is State.DOCKED and isinstance(aircraft, aircraft_type)]
-
-        for i in range(aircraft_number):
-            docked_aircraft[i].state = State.SEARCH
-            docked_aircraft[i].state_change_time = time
-            docked_aircraft[i].formation_lock = False
-            docked_aircraft[i].area = patrol_area
-            docked_aircraft[i].kinematics.set_heading(bearing)
-            docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed/2)
+                           aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
+        try:
+            for i in range(aircraft_number):
+                undock(docked_aircraft[i], State.SEARCH, time)
+                docked_aircraft[i].area = patrol_area
+                docked_aircraft[i].kinematics.set_heading(bearing)
+                docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
+        except IndexError:
+            pass
 
         self.search_mission = True
 
-    def deploy_carrier_air_wing(self, bearing, distance, air_wing_composition, time):
-        pass
+    def deploy_carrier_air_wing(self, target_location, air_wing_composition, time):
+        carrier_location = self.kinematics.get_location()
+        patrol_area = Area.create_patrol_area_from_center(target_location, 50, 50, unit='nmi')
+        bearing = Geography.bearing(carrier_location, target_location)
+        for aircraft_type in air_wing_composition:
+            docked_aircraft = [aircraft for aircraft in self.my_aircraft if
+                               aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
+            try:
+                for i in range(air_wing_composition[aircraft_type]):
+                    undock(docked_aircraft[i], State.ENGAGE, time)
+                    docked_aircraft[i].area = patrol_area
+                    docked_aircraft[i].kinematics.set_heading(bearing)
+                    docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
+            except IndexError:
+                pass
+
+        self.air_wing_mission = True
 
 
 # US carrier aircraft numbers by ship the morning of 7 May: Lexington- 35 Douglas SBD Dauntless dive bombers, 12

@@ -22,9 +22,12 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
-from CnCPT.ArchitectureGenerator.ArchitectureBreeder import ArchitectureBreeder
-from CnCPT.Simulation.RunController import RunController
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+import FitnessAssessor.FitnessCutoffEvaluation as FitnessCutoffEvaluation
+import FitnessAssessor.FitnessUtilityCalculation as FitnessUtilityCalculation
+import FitnessAssessor.FitnessVarianceEvaluation as FitnessVarianceEvaluation
+from ArchitectureGenerator.ArchitectureBreeder import ArchitectureBreeder
+from Simulation.RunController import RunController
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class FakeServer(object):
@@ -91,13 +94,13 @@ class Manager:
             if generation >= 5:
                 converged = True
 
-            # asses fitness
-            # FitnessCutoffEvaluation
-            # FitnessUtilityCalculation
-            # FitnessVarianceEvaluation
+            # Asses Fitness
+            FitnessUtilityCalculation.process(self.model_features, self.labels_log, self.labels_reg)
+            FitnessVarianceEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
+            FitnessCutoffEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
 
             # Update Model Variables
-            # train classification model; asses out of sample perforamcne
+            # train classification model; asses out of sample performance
             # for model in self.models["Classification"]:
             #     predictor = self.models["Classification"][model]["model"]
             #     self.models["Classification"][model]["scores"] = cross_val_score(predictor, self.model_features,

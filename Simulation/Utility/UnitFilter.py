@@ -4,7 +4,7 @@
 
 import numpy as np
 
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class UnitFilter:

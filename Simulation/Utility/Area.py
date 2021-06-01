@@ -7,12 +7,14 @@ import random
 import numpy as np
 from shapely.geometry import Polygon, Point
 
-from CnCPT.Simulation.GeographyPhysics import Geography
+from Simulation.GeographyPhysics import Geography
 
 
 class Area(Polygon):
-    def __init__(self, bounds):
+    def __init__(self, bounds, length=None, width=None):
         super(Area, self).__init__(shell=bounds)
+        self._length = length
+        self._width = width
         self.center = self.lat_lon_average()
 
     def lat_lon_average(self):
@@ -31,7 +33,7 @@ class Area(Polygon):
         bot_left = Geography.reckon(half_l, 270, bot_center[0], bot_center[1], unit=unit)
         bot_right = Geography.reckon(half_l, 90, bot_center[0], bot_center[1], unit=unit)
         bounds = (top_left, top_right, bot_left, bot_right)
-        return Area(bounds)
+        return Area(bounds, length, width)
 
     def random_starting_loc_in_poly(self):
         """ This method generates a point inside the shapely Polygon object passed in. If you wish to have a more

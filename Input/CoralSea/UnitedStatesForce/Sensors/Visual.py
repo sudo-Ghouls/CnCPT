@@ -3,7 +3,7 @@
 # Fall 2020 - EM.THE
 
 
-from CnCPT.Simulation.Sensors.Sensor import Sensor
+from Simulation.Sensing.Sensor import Sensor
 
 
 class VisualSurface(Sensor):

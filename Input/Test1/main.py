@@ -1,16 +1,16 @@
 import os
 
-from CnCPT.ArchitectureGenerator.Architecture import Architecture
-from CnCPT.ArchitectureGenerator.Constraints.CONOPCon import CONOPCon
-from CnCPT.ArchitectureGenerator.Constraints.CompositionCon import CompositionCon
-from CnCPT.Core.Manager import Manager
-from CnCPT.Input.Test1.behaviors.behavior_alpha import BehaviorA
-from CnCPT.Input.Test1.behaviors.behavior_charlie import BehaviorC
-from CnCPT.Input.Test1.behaviors.behavior_delta import BehaviorD
-from CnCPT.Input.Test1.red_units import red_units
-from CnCPT.Input.Test1.units.cg import CG
-from CnCPT.Input.Test1.units.ddg import DDG
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from ArchitectureGenerator.Architecture import Architecture
+from ArchitectureGenerator.Constraints.CONOPCon import CONOPCon
+from ArchitectureGenerator.Constraints.CompositionCon import CompositionCon
+from Core.Manager import Manager
+from Input.Test1.behaviors.behavior_alpha import BehaviorA
+from Input.Test1.behaviors.behavior_charlie import BehaviorC
+from Input.Test1.behaviors.behavior_delta import BehaviorD
+from Input.Test1.red_units import red_units
+from Input.Test1.units.cg import CG
+from Input.Test1.units.ddg import DDG
+from Simulation.Utility.SideEnum import SideEnum
 
 if __name__ == "__main__":
     # Set up Test Constraints

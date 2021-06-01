@@ -5,9 +5,10 @@
 from shapely.geometry import Point
 from sortedcontainers import SortedListWithKey
 
-from CnCPT.Simulation.GeographyPhysics import Kinematics, Route
-from CnCPT.Simulation.Units.State import State
-from CnCPT.Simulation.Utility.Area import Area
+from Simulation.GeographyPhysics import Kinematics, Route
+from Simulation.Logic.ChildLogic import dock
+from Simulation.Units.State import State
+from Simulation.Utility.Area import Area
 
 
 def base_behavior(_self, simulation_manager):
@@ -56,6 +57,7 @@ class Unit:
         self.children = []
 
         # Behavior
+        self.tasks = SortedListWithKey(key=(lambda x: -x.time))
         self.target = None
         self.state = State.NONE
         self.state_change_time = 0
@@ -109,13 +111,13 @@ class Unit:
                         new_child = key(name=child_name)
                         new_child.parent = self
                         new_child.side = self.side
-                        new_child.state = State.DOCKED
+                        dock(new_child, 0.0, refuel=False)
                         self.children.append(new_child)
                 else:
                     for new_child in children_dict[key]:
                         new_child.parent = self
                         new_child.side = self.side
-                        new_child.state = State.DOCKED
+                        dock(new_child, 0.0, refuel=False)
                         self.children.append(new_child)
         self.spawn = {child.name: child for child in self.children}  # to register children to simulation_manager
 
@@ -126,12 +128,6 @@ class Unit:
         :param simulation_manager:
         :return:
         """
-        if self.parent is not None:
-            if self.state is State.DOCKED:
-                self.docked = True
-                self.kinematics.set_location(unit=self.parent)
-            else:
-                self.docked = False
         self.my_brain(_self, simulation_manager)
 
     def moving(self):

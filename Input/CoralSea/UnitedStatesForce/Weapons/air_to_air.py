@@ -3,8 +3,8 @@
 # Fall 2020 - EM.THE
 
 
-from CnCPT.Input.CoralSea.BaseClasses.Aircraft import Aircraft
-from CnCPT.Simulation.Weapons.Weapon import Weapon
+from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Simulation.Engagement.Weapon import Weapon
 
 
 class AirToAirGun(Weapon):

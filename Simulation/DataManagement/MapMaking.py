@@ -116,12 +116,12 @@ def animate(idx):
         for idx, name in enumerate(unit_names):
             unit_lines[name]["x_data"] = []
             unit_lines[name]["y_data"] = []
-        restart()
+        # restart()
     return [unit_lines[unit]['lineObj'] for unit in unit_lines.keys()]
 
 
 ani = matplotlib.animation.FuncAnimation(fig, animate, init_func=init_function, frames=len(unit_data.keys()),
-                                         interval=200, repeat=False, save_count=len(unit_data.keys()))
+                                         interval=100, repeat=False, save_count=len(unit_data.keys()))
 
 
 def restart():
@@ -135,5 +135,5 @@ def restart():
         plt.close()
 
 
-plt.show()
-ani.save(output)
+# plt.show()
+ani.save(output, progress_callback=lambda i, n: print(f'Saving frame {i} of {n}'))

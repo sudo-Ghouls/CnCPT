@@ -1,8 +1,14 @@
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Carrier import *
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Cruiser import *
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Destroyer import *
-from CnCPT.Input.CoralSea.UnitedStatesForce.Ships.Oiler import *
-from CnCPT.Simulation.Units.UnitGroup import UnitGroup
+# Author: Thomas C.F. Goolsby - tgoolsby@mit.edu
+# This file was created in support of the CNCPT Thesis
+# Fall 2020 - EM.THE
+
+
+from Input.CoralSea.UnitedStatesForce.Ships.Carrier import *
+from Input.CoralSea.UnitedStatesForce.Ships.Cruiser import *
+from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import *
+from Input.CoralSea.UnitedStatesForce.Ships.Oiler import *
+from Simulation.Communication.Network import Network
+from Simulation.Units.UnitGroup import UnitGroup
 
 
 # Key Routes
@@ -108,6 +114,8 @@ def generate():
                                                   route=FuelingGroupRoute)
     all_units = AttackGroup + CarrierGroup + SupportGroup + \
                 FuelingGroup
+
+    Network('US', all_units)
     return all_units
 
 

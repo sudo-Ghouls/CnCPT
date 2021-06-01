@@ -4,7 +4,7 @@
 
 from shapely.geometry import Point
 
-from CnCPT.Simulation.GeographyPhysics import Geography, wrapto360
+from Simulation.GeographyPhysics import Geography, wrapto360
 
 
 def pursue_target(unit, target_contact, standoff_range_m=10000):
@@ -24,7 +24,7 @@ def pursue_target(unit, target_contact, standoff_range_m=10000):
     unit.kinematics.set_heading(bearing_to_go)
 
 
-def determine_priority_target_contact(contact_list, method='range', class_priority_map=None):
+def determine_priority_target_contact(contact_list, method='range', class_priority_map=None, excluded_classes=None):
     """
     :param contact_list: list or dict of contact objects
     :param method: string for sorting method
@@ -49,6 +49,8 @@ def determine_priority_target_contact(contact_list, method='range', class_priori
         data = {}
         for contact in contacts:
             data[contact] = class_priority_map.get(contact.truth_unit.__class__, 10000000)
+        if not bool(data):
+            return None
         sorted_contacts = dict(sorted(data.items(), key=lambda item: item[1]))
         target_contact = next(iter(sorted_contacts))
         return target_contact
@@ -56,7 +58,23 @@ def determine_priority_target_contact(contact_list, method='range', class_priori
     if method == "range":
         data = {}
         for contact in contacts:
-            data[contact] = contact.distance_to
+            if not isinstance(contact.truth_unit, excluded_classes):
+                data[contact] = contact.distance_to
+        if not bool(data):
+            return None
         sorted_contacts = dict(sorted(data.items(), key=lambda item: item[1]))
         target_contact = next(iter(sorted_contacts))
         return target_contact
+
+
+DAY_START = 6 * 60 * 60  # 6 AM
+DAY_END = 20 * 60 * 60  # 8 PM
+DAY_LENGTH = 24 * 60 * 60  # 24 hours
+
+
+def is_day(time):
+    time_of_day = time % DAY_LENGTH
+    if DAY_START < time_of_day < DAY_END:
+        return True
+    else:
+        return False

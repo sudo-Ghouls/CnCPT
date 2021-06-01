@@ -4,7 +4,7 @@
 
 import math
 
-from CnCPT.Simulation.GeographyPhysics import Geography, Route
+from Simulation.GeographyPhysics import Geography, Route
 
 
 class UnitGroup:

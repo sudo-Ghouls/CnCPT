@@ -2,11 +2,11 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from CnCPT.Input.CoralSea.BaseClasses.Ship import Ship
-from CnCPT.Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
-from CnCPT.Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
-from CnCPT.Simulation.Utility.Conversions import kts_to_ms
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Input.CoralSea.BaseClasses.Ship import Ship
+from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
+from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
+from Simulation.Utility.Conversions import kts_to_ms
+from Simulation.Utility.SideEnum import SideEnum
 
 
 class Cruiser(Ship):

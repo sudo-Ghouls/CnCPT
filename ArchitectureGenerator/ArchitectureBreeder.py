@@ -5,7 +5,7 @@ import random
 
 import numpy as np
 
-from CnCPT.ArchitectureGenerator.Architecture import Architecture
+from ArchitectureGenerator.Architecture import Architecture
 
 
 class ArchitectureBreeder:

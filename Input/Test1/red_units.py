@@ -1,7 +1,7 @@
-from CnCPT.Input.Test1.behaviors.behavior_delta import BehaviorD
-from CnCPT.Input.Test1.units.cg import CG
-from CnCPT.Input.Test1.units.ddg import DDG
-from CnCPT.Simulation.Utility.SideEnum import SideEnum
+from Input.Test1.behaviors.behavior_delta import BehaviorD
+from Input.Test1.units.cg import CG
+from Input.Test1.units.ddg import DDG
+from Simulation.Utility.SideEnum import SideEnum
 
 spawn_polygon = ((43.22, -68.92), (43.22, -62.4), (39.14, -62.4), (39.14, -68.92), (43.22, -68.92))
 

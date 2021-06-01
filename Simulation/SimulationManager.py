@@ -1,15 +1,18 @@
 # Author: Thomas C.F. Goolsby - tgoolsby@mit.edu
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
-import itertools
-import sys
 import time
 
 from simpy.core import *
 
-from CnCPT.Simulation.DataLogging import DataLogger
-from CnCPT.Simulation.GeographyPhysics import Geography
-from CnCPT.Simulation.Utility.UnitFilter import create_unit_filter
+from Simulation.Communication.core import communicate
+from Simulation.DataManagement.DataLogging import DataLogger, log, update_status_bar
+from Simulation.Engagement.core import adjudicate
+from Simulation.GeographyPhysics.Geography import Geography
+from Simulation.GeographyPhysics.core import propagate
+from Simulation.Sensing.core import sense, update_unit_contacts
+from Simulation.Units.core import spawn, update_state
+from Simulation.Utility.UnitFilter import create_unit_filter
 
 
 class SimulationManager(Environment):
@@ -87,131 +90,12 @@ class SimulationManager(Environment):
             raise exc
 
     def update_environment(self):
-        self.update_status_bar()
-        self.update_state()
-        self.adjudicate()
-        self.sense()
-        self.update_unit_contacts()
-        self.communicate()
-        self.spawn()
-        self.propagate()
-        self.log()
-
-    def update_status_bar(self):
-        fraction_complete = float(self._now - self.start_time) / (self.end_time - self.start_time)
-        status = ""
-        if fraction_complete >= 1:
-            status = "Done.\r\n"
-        num_blocks = int(round(25 * fraction_complete))
-        bar_string = "#" * num_blocks + "-" * (25 - num_blocks)
-        text_1 = "\r[{0}] {1:5.1f}%".format(bar_string, fraction_complete * 100)
-        text_time = self._now
-        speed = ((self._now - self.start_time) / self.elapsed_real_time)
-        text_2 = "[Time: {0}] [Speed: {1} x Realtime] {2}".format(text_time, speed, status)
-        text = text_1 + text_2
-        try:
-            sys.stdout.write((text).encode("utf8"))
-        except TypeError:
-            sys.stdout.write(text)
-        sys.stdout.flush()
-
-    def spawn(self):
-        """
-
-        :return:
-        """
-        for unit in self.all_units:
-            if bool(unit.spawn):
-                for new_unit_key in unit.spawn:
-                    new_unit = unit.spawn[new_unit_key]
-                    new_unit.kinematics.set_location(unit=unit)
-                    new_unit.register(self, self.constants)
-                    self.all_units.append(new_unit)
-                unit.spawn = {}
-
-    def adjudicate(self):
-        """
-
-        :return:
-        """
-        if len(self.all_units) == 0:
-            return
-        units_with_weapons = self.unit_filter.filter(alive=True, armed=True, docked=False)
-        for unit in units_with_weapons:
-            for weapon in unit.weapons:
-                weapon.engage(unit, self)
-
-    def update_state(self):
-        """
-        This function maintains the state of all units in the scenario
-        :return:
-        """
-        self.Geography.update(self.all_units)
-        self.unit_filter.ingest(list(self.all_units))
-
-    def propagate(self):
-        """
-        This function propagates all units forward in time based on their current velocity and heading
-        :return:
-        """
-        if len(self.all_units) == 0:
-            return
-        units_to_propagate = self.unit_filter.filter(alive=True, moving=True)
-
-        # for unit in units_to_propagate:
-        #     Geography.propagate(unit, self.time_step)
-        list(map(Geography.propagate, units_to_propagate, itertools.repeat(self.time_step, len(units_to_propagate))))
-
-    def sense(self, max_retention_time=12000):
-        """
-        evaluates all the sensing capability on board units in the scenario
-        :return:
-        """
-        if len(self.all_units) == 0:
-            return
-        units_with_sensors = self.unit_filter.filter(alive=True, has_sensors=True, docked=False)
-        for unit in units_with_sensors:
-            for sensor in unit.sensors:
-                sensor.process(unit, self)
-                self.update_contacts(sensor.contacts, self.now, max_retention_time)
-                unit.contacts.update(sensor.contacts)
-
-    def update_unit_contacts(self, max_retention_time=12000):
-        """
-            removes old (based on max retention time and dead contacts from a units contact list (cheats using truth
-            data)
-        :param max_retention_time: hold time for contacts in seconds
-        :return:
-        """
-        units_with_contacts = self.unit_filter.filter(alive=True, has_contacts=True, docked=False)
-
-        for unit in units_with_contacts:
-            self.update_contacts(unit.contacts, self.now, max_retention_time)
-
-    @staticmethod
-    def update_contacts(contacts, current_time, max_retention_time):
-        keys_to_pop = []
-        for contact_key in contacts:
-            time_elapsed = current_time - contacts[contact_key].time
-            if time_elapsed > max_retention_time:
-                keys_to_pop.append(contact_key)
-            if contacts[contact_key].truth_unit.alive is False:
-                keys_to_pop.append(contact_key)
-
-        for key in keys_to_pop:
-            _ = contacts.pop(key)
-
-    def communicate(self):
-        """
-        This function transmits and receives any information shared via communications in the last timestep
-        :return:
-        """
-
-    def log(self):
-        """
-
-        :return:
-        """
-
-        self.data_logger.dump_units_to_file(self)
-        self.data_logger.update_formatted_unit_data(self)
+        update_status_bar(self)
+        update_state(self)
+        adjudicate(self)
+        sense(self)
+        update_unit_contacts(self)
+        communicate(self)
+        spawn(self)
+        propagate(self)
+        log(self)
