@@ -1,7 +1,7 @@
 import os
 
-from ArchitectureGenerator.Constraints.CONOPCon import CONOPCon
-from ArchitectureGenerator.Constraints.CompositionCon import CompositionCon
+from ArchitectureGeneration.Constraints.CONOPCon import CONOPCon
+from ArchitectureGeneration.Constraints.CompositionCon import CompositionCon
 from Core.Manager import Manager
 from Input.CoralSea.JapaneseForce.BaselineJapaneseForceLaydown import BaselineJapaneseForce
 from Input.Test1.behaviors.behavior_alpha import BehaviorA
@@ -34,6 +34,10 @@ if __name__ == "__main__":
     filepath = os.getcwd()
     MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce)
     controls = {"start_time": 0.0,
-                "end_time": 3 * 24 * 3600.0}
+                "end_time": 3 * 24 * 3600.0,
+                "utility_threshold": .9,
+                "variance_threshold": .1,
+                "cutoff_metric": 10000,
+                "max_generations": 5}
     MyManager.runCnCPT(controls, run_size=2,
                        output_path=r"C:\Users\Thomas Goolsby\iCloudDrive\Documents\MIT\System Design & Management\Thesis_Working_Area\CnCPT\Output\CoralSea")

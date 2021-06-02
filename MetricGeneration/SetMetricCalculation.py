@@ -2,7 +2,8 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
+import sql
 
-class ForceCONOP:
-    def __init__(self):
-        pass
+
+def SetMetricCalculation(output_path):
+        return None

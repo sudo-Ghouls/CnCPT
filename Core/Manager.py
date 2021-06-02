@@ -4,28 +4,16 @@
 
 import datetime
 import os
-import random as r
-from enum import Enum
 
 import numpy as np
-import pandas as pd
 import pp
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-from sklearn.linear_model import ElasticNet
-from sklearn.linear_model import Lasso
-from sklearn.linear_model import LinearRegression
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import Ridge
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPRegressor
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
 
-import FitnessAssessor.FitnessCutoffEvaluation as FitnessCutoffEvaluation
-import FitnessAssessor.FitnessUtilityCalculation as FitnessUtilityCalculation
-import FitnessAssessor.FitnessVarianceEvaluation as FitnessVarianceEvaluation
-from ArchitectureGenerator.ArchitectureBreeder import ArchitectureBreeder
+import FitnessAssessment.FitnessCutoffEvaluation as FitnessCutoffEvaluation
+import FitnessAssessment.FitnessUtilityCalculation as FitnessUtilityCalculation
+import FitnessAssessment.FitnessVarianceEvaluation as FitnessVarianceEvaluation
+from ArchitectureGeneration.ArchitectureBreeder import ArchitectureBreeder
+from ArchitectureGeneration.ArchitectureCodeGeneration import generateBaseArchCode, generateAllArchCodes
+from FitnessPrediction.PredictionModelManager import PredictionModelManager
 from Simulation.RunController import RunController
 from Simulation.Utility.SideEnum import SideEnum
 
@@ -62,27 +50,42 @@ class Manager:
         self.num_loc_polys = None
         self.conop_con_list = None
         self.max_conop_per_unit = None
-        self.base_arch_code = self.generateBaseArchCode()
+        self.base_arch_code = generateBaseArchCode(self)
 
         # Model Related
         self.model_features = None
         self.labels_log = None
         self.labels_reg = None
         self.peak_performing_predictions = None
-        self.models = self.initialize_models()
+        self.models = PredictionModelManager()
 
         # Parallel Python
         self.server = pp.Server(ppservers=())
 
+        # Fitness Cutoffs
+        self.utility_threshold = None
+        self.variance_threshold = None
+        self.cutoff_metric = None
+        self.max_generations = None
+
     def runCnCPT(self, controls, run_size=10, output_path=''):
         datestring = datetime.datetime.now().strftime("%Y-%m-%d-%H%M%S")
         output_path = os.path.join(output_path, datestring)
-        converged, generation = False, 1
+        satisfied, generation = False, 1
+
+        # Update Fitness Cutoffs based on controls
+        self.utility_threshold = controls.pop("utility_threshold", None)
+        self.variance_threshold = controls.pop("variance_threshold", None)
+        self.cutoff_metric = controls.pop("cutoff_metric", None)
+        self.max_generations = controls.pop("max_generations", None)
+        if {self.utility_threshold, self.variance_threshold, self.cutoff_metric, self.max_generations} is None:
+            raise Exception("No Cutoff criteria defined; please inlcude utility_threshold, variance_threshold or "
+                            "cutoff_generations in controls")
 
         # generate all possible architecture codes
-        arch_codes = self.generateAllArchCodes()
+        arch_codes = generateAllArchCodes(self)
         my_breeder = ArchitectureBreeder(run_size, arch_codes)
-        while not converged:
+        while not satisfied:
             # Birth or Breed
             if bool(my_breeder.Architectures):
                 population_sample = my_breeder.breedArchitectures(self, SideEnum.BLUE)
@@ -91,13 +94,6 @@ class Manager:
 
             sample_results = self.runPopulationSample(generation, population_sample, controls, output_path, my_breeder)
             self.updateResults(population_sample, sample_results, my_breeder)
-            if generation >= 5:
-                converged = True
-
-            # Asses Fitness
-            FitnessUtilityCalculation.process(self.model_features, self.labels_log, self.labels_reg)
-            FitnessVarianceEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
-            FitnessCutoffEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
 
             # Update Model Variables
             # train classification model; asses out of sample performance
@@ -112,6 +108,13 @@ class Manager:
             #     self.models["Regression"][model]["scores"] = cross_val_score(predictor, self.model_features,
             #                                                                  self.labels_reg, cv=5,
             #                                                                  scoring='neg_root_mean_squared_error')
+
+            # Asses Cutoff parameters
+            utility = FitnessUtilityCalculation.process(self.model_features, self.labels_log, self.labels_reg)
+            variance = FitnessVarianceEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
+            cutoff = FitnessCutoffEvaluation.process(self.model_features, self.labels_log, self.labels_reg)
+            satisfied = self.determine_satisfaction(utility, variance, cutoff, generation)
+
             generation += 1
 
     def runPopulationSample(self, generation, population_sample, controls, output_path, my_breeder):
@@ -154,137 +157,20 @@ class Manager:
             if self.model_features is None:
                 self.model_features = np.array(arch.code)
                 self.labels_log = np.array([arch_result])
-                self.labels_reg = np.array([self.determineResultCategory(arch_result)])
+                self.labels_reg = np.array([PredictionModelManager.determineResultCategory(arch_result)])
             else:
                 self.model_features = np.vstack((self.model_features, arch.code))
                 self.labels_log = np.vstack((self.labels_log, arch_result))
-                self.labels_reg = np.vstack((self.labels_reg, self.determineResultCategory(arch_result)))
+                self.labels_reg = np.vstack(
+                    (self.labels_reg, PredictionModelManager.determineResultCategory(arch_result)))
 
-    @staticmethod
-    def determineResultCategory(result):
-        if result > 75:
-            return PerformanceCategory.GREAT
-        if result > 50:
-            return PerformanceCategory.ACCEPTABLE
-        if result > 25:
-            return PerformanceCategory.POOR
-        if result > 0:
-            return PerformanceCategory.TERRIBLE
-
-    def generateBaseArchCode(self):
-        comp_con_list = self.CompCon.units.keys()
-        self.max_num_per_unit = [self.CompCon.units[unit].maxNumber for unit in comp_con_list]
-        self.num_loc_polys = [int(len(self.CompCon.units[unit].Polygons)) for unit in comp_con_list]
-        self.conop_con_list = self.CONOPCon.units.keys()
-        self.max_conop_per_unit = [self.CONOPCon.units[unit].maxNumConop for unit in self.conop_con_list]
-        base_arch_code = []
-        for idx, Unit in enumerate(comp_con_list):
-            base_arch_code.extend([self.max_conop_per_unit[idx], self.num_loc_polys[idx]] * (
-                self.max_num_per_unit[idx]))  # two b/c one 0 for behavior one 0 for loc
-        return base_arch_code
-
-    def generateAllArchCodes(self):
-        comp_con_list = self.CompCon.units.keys()
-        lower_bound_per_unit = [self.CompCon.units[unit].lowerBound for unit in comp_con_list]
-        upper_bound_per_unit = [self.CompCon.units[unit].upperBound for unit in comp_con_list]
-        ArchCodes = self.GenerateArchCode(self.base_arch_code, lower_bound_per_unit, upper_bound_per_unit,
-                                          self.num_loc_polys,
-                                          self.max_conop_per_unit)
-        return ArchCodes
-
-    def MaximumIdxFromCons(self, NumLocPolys, MaxConopPerUnit):
-        all_cons = np.concatenate((NumLocPolys, MaxConopPerUnit))
-        return max(all_cons)
-
-    def GenerateArchCode(self, BaseArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):
-        possible_arch_codes, arch_codes = [], []
-
-        for Col in range(len(BaseArchCode)):
-            if Col % 2 == 0:
-                options = [None] + list(range(BaseArchCode[Col]))  # Behavior Choice
-            else:
-                options = list(range(BaseArchCode[Col]))
-            if len(possible_arch_codes) == 0:
-                possible_arch_codes = np.vstack(np.array(r.choices(options, k=10000)))
-            else:
-                possible_arch_codes = np.concatenate(
-                    (possible_arch_codes, np.vstack(np.array(r.choices(options, k=10000)))), axis=1)
-            # Loop ever every second column setting value equal to None if related Behavior is None
-            if Col % 2 == 1:
-                for Row in range(np.size(possible_arch_codes, 0)):
-                    if possible_arch_codes[Row, Col - 1] is None:
-                        possible_arch_codes[Row, Col] = None
-
-        for ArchCode in possible_arch_codes:
-            if self.ValidArch(ArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):
-                if len(arch_codes) == 0:
-                    arch_codes = ArchCode
-                else:
-                    arch_codes = np.append(arch_codes, ArchCode, axis=0)
-        arch_codes = np.reshape(arch_codes, (int(int(len(arch_codes)) / len(BaseArchCode)), len(BaseArchCode)))
-        arch_codes = pd.DataFrame(arch_codes).drop_duplicates().values
-        return arch_codes
-
-    def ValidArch(self, ArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):
-        # ArchCode = np.array([1,2,3,4,5,6,7,8,9,10])
-        if next(iter(set(ArchCode))) is None:
-            return False
-        start_idx = 0
-        for Unit_i in range(len(LowerBoundPerUnit)):
-            max_num_of_unit_i = UpperBoundPerUnit[Unit_i]
-            end_idx = start_idx + max_num_of_unit_i * 2
-            # Check if Behavior Columns are Valid
-            unit_i_behaviors = ArchCode[start_idx:end_idx:2]
-            if next(iter(set(unit_i_behaviors))) is None:
-                if LowerBoundPerUnit[Unit_i] > 0:
-                    return False
-            else:
-                if len([i for i in unit_i_behaviors if i is not None]) < LowerBoundPerUnit[Unit_i]:
-                    return False
-                if max([i for i in unit_i_behaviors if i is not None]) > MaxConopPerUnit[Unit_i] - 1:
-                    return False
-            # Check if Location Columns are Valid
-            unit_i_locations = ArchCode[start_idx + 1:end_idx:2]
-            if next(iter(set(unit_i_locations))) is None:
-                if LowerBoundPerUnit[Unit_i] > 0:
-                    return False
-            else:
-                if len([i for i in unit_i_locations if i is not None]) < LowerBoundPerUnit[Unit_i]:
-                    return False
-                if max([i for i in unit_i_locations if i is not None]) > NumLocPolys[Unit_i] - 1:
-                    return False
-
-            unit_i_info = np.vstack((unit_i_behaviors, unit_i_locations))
-            for i in range(np.size(unit_i_info, 1)):
-                if len(set(unit_i_info[:, i])) > 1:
-                    if None in set(unit_i_info[:, i]):
-                        return False
-            start_idx = end_idx
-        return True
-
-    @staticmethod
-    def initialize_models():
-        models = {"Classification": {},
-                  "Regression": {}}
-        # Initialize All Classification Models
-        models['Classification']["LogisticRegression"] = {"model": LogisticRegression()}
-        models['Classification']["LinearDiscriminantAnalysis"] = {"model": LinearDiscriminantAnalysis()}
-        models['Classification']["KNeighborsClassifier"] = {"model": KNeighborsClassifier()}
-        models['Classification']["GaussianNB"] = {"model": GaussianNB()}
-        models['Classification']["DecisionTreeClassifier"] = {"model": DecisionTreeClassifier()}
-        models['Classification']["SVC"] = {"model": SVC()}
-
-        # Initialize All Regression Models
-        models['Regression']["LinearRegression"] = {"model": LinearRegression()}
-        models['Regression']["Ridge"] = {"model": Ridge()}
-        models['Regression']["Lasso"] = {"model": Lasso()}
-        models['Regression']["ElasticNet"] = {"model": ElasticNet()}
-        models['Regression']["MLPRegressor"] = {"model": MLPRegressor()}
-        return models
-
-
-class PerformanceCategory(Enum):
-    GREAT = 1
-    ACCEPTABLE = 2
-    POOR = 3
-    TERRIBLE = 4
+    def determine_satisfaction(self, utility, variance, cutoff, generation):
+        if utility > self.utility_threshold:
+            return True
+        if variance < self.variance_threshold:
+            return True
+        if cutoff > self.cutoff_metric:
+            return True
+        if generation > self.max_generations:
+            return True
+        return False
