@@ -3,8 +3,10 @@
 # Fall 2020 - EM.THE
 
 import math
+from random import randrange
 
-from Simulation.GeographyPhysics import Geography, Route
+from Simulation.GeographyPhysics.core import bearing
+from Simulation.GeographyPhysics.core import reckon
 
 
 class UnitGroup:
@@ -35,15 +37,19 @@ class UnitGroup:
             unit.group = NewGroup
             if unit is not leader:
                 unit.leader = leader
-                starting_bearing = Geography.bearing(route[0], route[1])
+                if route is not None:
+                    starting_bearing = bearing(route.waypoints[0], route.waypoints[1])
+                else:
+                    starting_bearing = randrange(0, 360)
                 unit.kinematics.set_heading(starting_bearing)
             else:
-                unit.route = Route(route)
-                unit.route_propagation = True
+                if route is not None:
+                    unit.route = route
+                    unit.route_propagation = True
+                    unit.kinematics.set_location(lat=route.waypoints[0][0], lon=route.waypoints[0][1])
+                    starting_bearing = bearing(route.waypoints[0], route.waypoints[1])
+                    unit.kinematics.set_heading(starting_bearing)
                 unit.follower.append(unit)
-                unit.kinematics.set_location(lat=route[0][0], lon=route[0][1])
-                starting_bearing = Geography.bearing(route[0], route[1])
-                unit.kinematics.set_heading(starting_bearing)
         UnitGroup.basic_formation(units)
         return NewGroup.units
 
@@ -59,7 +65,7 @@ class UnitGroup:
                 dist_to_reckon = range_seperation_m
             else:
                 dist_to_reckon = loop * range_seperation_m
-            new_lat, new_lon = Geography.reckon(dist_to_reckon, angle_seperation_deg * loopIdx, center[0], center[1])
+            new_lat, new_lon = reckon(dist_to_reckon, angle_seperation_deg * loopIdx, center[0], center[1])
             unit.kinematics.set_location(new_lat, new_lon)
             unit.my_range_from_leader = dist_to_reckon
             unit.my_bearing_from_leader = angle_seperation_deg * loopIdx

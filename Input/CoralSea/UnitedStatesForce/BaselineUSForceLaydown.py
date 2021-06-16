@@ -8,6 +8,7 @@ from Input.CoralSea.UnitedStatesForce.Ships.Cruiser import *
 from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import *
 from Input.CoralSea.UnitedStatesForce.Ships.Oiler import *
 from Simulation.Communication.Network import Network
+from Simulation.GeographyPhysics.Route import Route
 from Simulation.Units.UnitGroup import UnitGroup
 
 
@@ -95,23 +96,23 @@ def generate():
                         Alywin(), Monaghan()]
 
     AttackGroup = UnitGroup.construct_unit_group("AttackGroup", AttackGroupUnits, leader=AttackGroupUnits[0],
-                                                 route=AttackGroupRoute)
+                                                 route=Route(AttackGroupRoute))
 
     # CarrierGroup
     CarrierGroupUnits = [Yorktown(), Lexington(), Morris(), Anderson(), Hammann(), Russell()]
     CarrierGroup = UnitGroup.construct_unit_group("CarrierGroup", CarrierGroupUnits, leader=CarrierGroupUnits[0],
-                                                  route=CarrierGroupRoute)
+                                                  route=Route(CarrierGroupRoute))
 
     # SupportGroup
     SupportGroupUnits = [Australia(), Hobart(), Chicago(), Perkins(), Walke()]
     SupportGroup = UnitGroup.construct_unit_group("SupportGroup", SupportGroupUnits, leader=SupportGroupUnits[0],
-                                                  route=SupportGroupRoute)
+                                                  route=Route(SupportGroupRoute))
 
     # FuelingGroup
     FuelingGroupUnits = [Neosho(), Tippecanoe(), Sims(), Worden()]
     FuelingGroup = UnitGroup.construct_unit_group("FuelingGroup", FuelingGroupUnits,
                                                   leader=FuelingGroupUnits[0],
-                                                  route=FuelingGroupRoute)
+                                                  route=Route(FuelingGroupRoute))
     all_units = AttackGroup + CarrierGroup + SupportGroup + \
                 FuelingGroup
 

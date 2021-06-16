@@ -9,8 +9,9 @@ from ArchitectureGeneration.Architecture import Architecture
 
 
 class ArchitectureBreeder:
-    def __init__(self, N, ArchCodes):
-        self.ArchCodes = ArchCodes
+    def __init__(self, N, arch_codes, base_arch_code):
+        self.ArchCodes = arch_codes
+        self.BaseArchCode = base_arch_code
         self.Architectures = {}
         self.LastGenerationData = {}
         self.LastGenerationArchCodes = None
@@ -68,12 +69,19 @@ class ArchitectureBreeder:
         parents_idxs = np.argpartition(self.LastGenerationRawResults, -2)[-2:]
         parents = [self.LastGenerationArchCodes[p_idx] for p_idx in parents_idxs]
         while len(population_sample) < self.NSamples:
-            self.breedGeneration()
+            ArchitectureInstance = self.breedGeneration(parents)
+            population_sample.append(ArchitectureInstance)
+            # TODO: handle the rare chance that the "breeded" archietcture already exists
 
         return population_sample
 
     def breedGeneration(self, parents):
-        pass
+        new_codes, new_code = [], []
+        for gene_idx in range(0, int(len(self.BaseArchCode) / 2), 2):
+            parent_choice = np.random.randint(0, 1)
+            gene_choice = parents[parent_choice][gene_idx:gene_idx + 1]
+            new_code.append(gene_choice)
+        return new_code
 
     def updateLastGeneration(self, generation_architectures, generation_results):
         data, ArchCodes = {}, []

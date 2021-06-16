@@ -5,7 +5,7 @@
 from shapely.geometry import Point
 from sortedcontainers import SortedListWithKey
 
-from Simulation.GeographyPhysics import Kinematics, Route
+from Simulation.GeographyPhysics.Kinematics import Kinematics
 from Simulation.Logic.ChildLogic import dock
 from Simulation.Units.State import State
 from Simulation.Utility.Area import Area
@@ -15,9 +15,19 @@ def base_behavior(_self, simulation_manager):
     pass
 
 
+blank_group_data = {'group': None,
+                    'leader': None,
+                    'follower': [],
+                    'my_range_from_leader': None,
+                    'my_bearing_from_leader': None,
+                    'formation_lock': False,
+                    'parent': None,
+                    'children': []}
+
+
 class Unit:
     def __init__(self, name=None, behavior=base_behavior, location=None, spawn_polygon=None, side=None, route=None,
-                 parent=None, network=None):
+                 parent=None, network=None, group_data=None):
         """
 
         :param name:
@@ -33,12 +43,15 @@ class Unit:
         self.my_brain = behavior
         self.kinematics = Kinematics()
         if spawn_polygon is not None:
-            self.spawn_polygon = Area(spawn_polygon)
+            if isinstance(spawn_polygon, Area):
+                self.spawn_polygon = spawn_polygon
+            else:
+                self.spawn_polygon = Area(bounds=spawn_polygon)
         else:
             self.spawn_polygon = None
         if location is not None:
             self.kinematics.set_location(Point(location[0], location[1]))
-        elif spawn_polygon is not None:
+        elif self.spawn_polygon is not None:
             point = self.spawn_polygon.random_starting_loc_in_poly()
             self.kinematics.set_location(lat=point.x, lon=point.y)
         self.cost = None
@@ -47,14 +60,16 @@ class Unit:
         self.docked = False
 
         # Group Related
-        self.group = None
-        self.leader = None
-        self.follower = []
-        self.my_range_from_leader = None
-        self.my_bearing_from_leader = None
-        self.formation_lock = False
-        self.parent = parent
-        self.children = []
+        if group_data is None:
+            group_data = blank_group_data
+        self.group = group_data.pop('group', None)
+        self.leader = group_data.pop('leader', None)
+        self.follower = group_data.pop('follower', [])
+        self.my_range_from_leader = group_data.pop('my_range_from_leader', None)
+        self.my_bearing_from_leader = group_data.pop('my_bearing_from_leader', None)
+        self.formation_lock = group_data.pop('formation_lock', False)
+        self.parent = group_data.pop('parent', parent)
+        self.children = group_data.pop('children', [])
 
         # Behavior
         self.tasks = SortedListWithKey(key=(lambda x: -x.time))
@@ -63,7 +78,7 @@ class Unit:
         self.state_change_time = 0
         self.area = None
         self.route_propagation = False
-        self.route = Route(route)
+        self.route = route
         self.brain = self.unconscious_brain
         self.time_between_thoughts = 600.0  # 600 second timestep
 
@@ -76,6 +91,19 @@ class Unit:
         # Communication
         self.network = network
         self.new_messages = []
+
+    def __reduce__(self):
+        self.group_data = {'group': self.group,
+                           'leader': self.leader,
+                           'follower': self.follower,
+                           'my_range_from_leader': self.my_range_from_leader,
+                           'my_bearing_from_leader': self.my_bearing_from_leader,
+                           'formation_lock': self.formation_lock,
+                           'parent': self.parent,
+                           'children': self.children}
+        return (self.__class__,
+                (self.name, self.my_brain, self.kinematics.get_location(), self.spawn_polygon, self.side, self.route,
+                 self.parent, self.network, self.group_data))
 
     def add_sensor(self, sensor):
         """

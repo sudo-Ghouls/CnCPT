@@ -8,8 +8,7 @@ from simpy.core import *
 from Simulation.Communication.core import communicate
 from Simulation.DataManagement.DataLogging import DataLogger, log, update_status_bar
 from Simulation.Engagement.core import adjudicate
-from Simulation.GeographyPhysics.Geography import Geography
-from Simulation.GeographyPhysics.core import propagate
+from Simulation.GeographyPhysics.Geography import Geography, propagate
 from Simulation.Sensing.core import sense, update_unit_contacts
 from Simulation.Units.core import spawn, update_state
 from Simulation.Utility.UnitFilter import create_unit_filter

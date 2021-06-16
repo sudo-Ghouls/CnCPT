@@ -8,9 +8,10 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class HeavyCruiser(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.RED)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
 
     @staticmethod
@@ -28,30 +29,42 @@ class HeavyCruiser(Ship):
 
 
 class Myoko(HeavyCruiser):
-    def __init__(self, name="Myoko", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Myoko", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Haguro(HeavyCruiser):
-    def __init__(self, name="Haguro", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Haguro", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Aoba(HeavyCruiser):
-    def __init__(self, name="Aoba", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Aoba", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Kako(HeavyCruiser):
-    def __init__(self, name="Kako", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Kako", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Kinugasa(HeavyCruiser):
-    def __init__(self, name="Kinugasa", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Kinugasa", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Furutaka(HeavyCruiser):
-    def __init__(self, name="Furutaka", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Furutaka", behavior=HeavyCruiser.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)

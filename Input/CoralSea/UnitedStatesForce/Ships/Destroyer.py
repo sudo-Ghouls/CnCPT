@@ -10,10 +10,11 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Destroyer(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.BLUE)
-        self.cost = 200
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+        self.cost = 300
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
         self.add_weapon(DeckGunSurface, 1000)
@@ -32,65 +33,91 @@ class Destroyer(Ship):
 
 
 class Phelps(Destroyer):
-    def __init__(self, name="Phelps", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Phelps", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Dewey(Destroyer):
-    def __init__(self, name="Dewey", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Dewey", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Farragut(Destroyer):
-    def __init__(self, name="Farragut", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Farragut", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Alywin(Destroyer):
-    def __init__(self, name="Alywin", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Alywin", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Monaghan(Destroyer):
-    def __init__(self, name="Monaghan", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Monaghan", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Morris(Destroyer):
-    def __init__(self, name="Morris", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Morris", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Anderson(Destroyer):
-    def __init__(self, name="Anderson", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Anderson", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Hammann(Destroyer):
-    def __init__(self, name="Hammann", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Hammann", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Russell(Destroyer):
-    def __init__(self, name="Russell", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Russell", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Perkins(Destroyer):
-    def __init__(self, name="Perkins", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Perkins", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Walke(Destroyer):
-    def __init__(self, name="Walke", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Walke", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Sims(Destroyer):
-    def __init__(self, name="Sims", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Sims", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Worden(Destroyer):
-    def __init__(self, name="Worden", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Worden", behavior=Destroyer.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)

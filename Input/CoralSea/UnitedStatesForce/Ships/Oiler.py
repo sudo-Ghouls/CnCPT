@@ -10,10 +10,11 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Oiler(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.BLUE)
-        self.cost = 200
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+        self.cost = 500
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
 
@@ -31,10 +32,14 @@ class Oiler(Ship):
 
 
 class Neosho(Oiler):
-    def __init__(self, name="Neosho", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Neosho", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class Tippecanoe(Oiler):
-    def __init__(self, name="Tippecanoe", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Tippecanoe", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)

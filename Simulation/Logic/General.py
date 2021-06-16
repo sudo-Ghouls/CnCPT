@@ -4,7 +4,7 @@
 
 from shapely.geometry import Point
 
-from Simulation.GeographyPhysics import Geography, wrapto360
+from Simulation.GeographyPhysics.core import haversine, bearing, wrapto360
 
 
 def pursue_target(unit, target_contact, standoff_range_m=10000):
@@ -16,11 +16,11 @@ def pursue_target(unit, target_contact, standoff_range_m=10000):
     """
     my_location = Point(unit.kinematics.get_location())
     target_location = Point(target_contact.latitude, target_contact.longitude)
-    distance_to_target = Geography.haversine(my_location, target_location)
+    distance_to_target = haversine(my_location, target_location)
     if distance_to_target > standoff_range_m:
-        bearing_to_go = Geography.bearing(my_location, target_location)
+        bearing_to_go = bearing(my_location, target_location)
     else:
-        bearing_to_go = wrapto360(Geography.bearing(my_location, target_location) - 180.0)
+        bearing_to_go = wrapto360(bearing(my_location, target_location) - 180.0)
     unit.kinematics.set_heading(bearing_to_go)
 
 

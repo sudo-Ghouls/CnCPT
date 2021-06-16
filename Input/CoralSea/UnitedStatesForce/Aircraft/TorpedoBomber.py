@@ -14,18 +14,19 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class TorpedoBomber(Aircraft):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.BLUE)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
         self.refueling_length = 10 * 60 * 60  # 10 hour
         self.add_sensor(VisualAir())
         self.add_weapon(AirLaunchedTorpedo, 1)
         if behavior is None:
-            self.my_brain = self.behavior_baseline
+            self.my_brain = self.behavior
 
     @staticmethod
-    def behavior_baseline(unit, simulation_manager):
+    def behavior(unit, simulation_manager):
         if unit.kinematics.get_range_traveled() > unit.kinematics.get_max_range():
             unit.state = State.RTB
 
@@ -67,18 +68,12 @@ class TorpedoBomber(Aircraft):
         if unit.state is State.RTB:
             return_to_parent(unit, simulation_manager.now)
 
-    @staticmethod
-    def behavior_aggressive(unit, simulation_manager):
-        pass
-
-    @staticmethod
-    def behavior_passive(unit, simulation_manager):
-        pass
-
 
 class DouglasTBDDevastator(TorpedoBomber):
-    def __init__(self, name="DouglasTBDDevastator", behavior=None, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="DouglasTBDDevastator", behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.kinematics.set_max_speed(
             kts_to_ms(111))  # cruise speed from https://en.wikipedia.org/wiki/Douglas_TBD_Devastator
         self.kinematics.set_max_range(max_range=700_000)

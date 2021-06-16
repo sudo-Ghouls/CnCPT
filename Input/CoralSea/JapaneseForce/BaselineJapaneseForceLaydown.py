@@ -7,6 +7,7 @@ from Input.CoralSea.JapaneseForce.Ships.LightCrusier import *
 from Input.CoralSea.JapaneseForce.Ships.Minelayer import *
 from Input.CoralSea.JapaneseForce.Ships.Tanker import *
 from Input.CoralSea.JapaneseForce.Ships.Transport import *
+from Simulation.GeographyPhysics.Route import Route
 from Simulation.Units.UnitGroup import UnitGroup
 
 
@@ -77,27 +78,27 @@ def generate():
     CarrierStrikingForce = UnitGroup.construct_unit_group("CarrierStrikingForce",
                                                           CarrierStrikingForceUnits,
                                                           leader=CarrierStrikingForceUnits[0],
-                                                          route=CarrierStrikingForceRoute)
+                                                          route=Route(CarrierStrikingForceRoute))
 
     # TulagiInvasionForce
     TulagiInvasionForceUnits = [Kinugasa(), Furutaka(), Yubari(), Tenryu(), Tatsuta(), Sazanami(), Oite(), Tsugaru(),
                                 KeijoMaru(), SeikaiMaru(), NikkaiMaru()]
     TulagiInvasionForce = UnitGroup.construct_unit_group("TulagiInvasionForce",
                                                          TulagiInvasionForceUnits, leader=TulagiInvasionForceUnits[0],
-                                                         route=TulagiInvasionForceRoute)
+                                                         route=Route(TulagiInvasionForceRoute))
 
     # CoveringForce
     CoveringForceUnits = [Shoho(), Aoba(), Kako(), Uzuki(), Asamagi(), Mutsuki(), Yunagi(), Yayoi()]
     CoveringForce = UnitGroup.construct_unit_group("CoveringForce",
                                                    CoveringForceUnits, leader=CoveringForceUnits[0],
-                                                   route=CoveringForceRoute)
+                                                   route=Route(CoveringForceRoute))
 
     # PortMoresbyLandingForce
     PortMoresbyLandingForceUnits = [Kaikuzuki(), Yuzuki(), Okinoshima(), KoeiMaru(), AsumanMaru()]
     PortMoresbyLandingForce = UnitGroup.construct_unit_group("PortMoresbyLandingForce",
                                                              PortMoresbyLandingForceUnits,
                                                              leader=PortMoresbyLandingForceUnits[0],
-                                                             route=PortMoresbyLandingForceRoute)
+                                                             route=Route(PortMoresbyLandingForceRoute))
     all_units = CarrierStrikingForce + TulagiInvasionForce + CoveringForce + \
                 PortMoresbyLandingForce
     return all_units

@@ -28,9 +28,10 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class LightCarrier(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.RED)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
@@ -151,8 +152,10 @@ class LightCarrier(Ship):
 #  carried 13 fighters without specifying how many of which type. (Lundstrom 2005b, p. 188; Millot 1974, p. 154).
 
 class Shoho(LightCarrier):
-    def __init__(self, name="Shoho", behavior=LightCarrier.behavior_startup, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Shoho", behavior=LightCarrier.behavior_startup, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.aircraft = {NakajimaB5NType97: 6,
                          A6M2Zero: 8,
                          MitsubishiA5MType96: 4}

@@ -16,7 +16,7 @@ def sense(simulation_manager, max_retention_time=12000):
     for unit in units_with_sensors:
         for sensor in unit.sensors:
             sensor.process(unit, simulation_manager)
-            simulation_manager.update_contacts(sensor.contacts, simulation_manager.now, max_retention_time)
+            update_contacts(sensor.contacts, simulation_manager.now, max_retention_time)
             unit.contacts.update(sensor.contacts)
 
 

@@ -8,9 +8,10 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Transport(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.RED)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
 
     @staticmethod
@@ -28,5 +29,7 @@ class Transport(Ship):
 
 
 class AsumanMaru(Transport):
-    def __init__(self, name="AsumanMaru", behavior=Transport.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="AsumanMaru", behavior=Transport.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)

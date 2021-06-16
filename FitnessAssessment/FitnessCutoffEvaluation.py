@@ -2,6 +2,7 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
+import numpy as np
 
 def process(model_features, labels_log, labels_reg):
-    pass
+    return np.max(labels_reg)

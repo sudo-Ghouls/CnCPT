@@ -5,7 +5,7 @@
 
 from shapely.geometry import Point
 
-from Simulation.GeographyPhysics import Geography
+from Simulation.GeographyPhysics.core import bearing, haversine
 from Simulation.Units.State import State
 
 
@@ -14,14 +14,14 @@ def return_to_parent(unit, time):
         unit.state, unit.state_change_time = State.RTB, time
     my_location = Point(unit.kinematics.get_location())
     parent_location = Point(unit.parent.kinematics.get_location())
-    distance_to_parent = Geography.haversine(my_location, parent_location)
-    bearing_to_parent = Geography.bearing(my_location, parent_location)
+    distance_to_parent = haversine(my_location, parent_location)
+    bearing_to_parent = bearing(my_location, parent_location)
     unit.kinematics.set_heading(bearing_to_parent)
     if distance_to_parent < unit.kinematics.get_speed() * unit.time_between_thoughts:
         dock(unit, time)
 
 
-def dock(unit, time, refuel = True):
+def dock(unit, time, refuel=True):
     if refuel:
         unit.state = State.DOCKED_REFUELING
     else:

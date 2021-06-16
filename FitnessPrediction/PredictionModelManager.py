@@ -10,6 +10,7 @@ from sklearn.linear_model import Lasso
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import Ridge
+from sklearn.model_selection import cross_val_score
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPRegressor
@@ -21,15 +22,23 @@ class PredictionModelManager:
     def __init__(self):
         self.models = self.initialize_models()
 
-    def update_models(self):
-        self.update_classification_models()
-        self.update_regression_models()
+    def update_models(self, features, labels_class, labels_reg):
+        self.update_classification_models(features, labels_class)
+        self.update_regression_models(features, labels_reg)
 
-    def update_classification_models(self):
-        pass
+    def update_classification_models(self, features, labels):
+        for model in self.models["Classification"]:
+            predictor = self.models["Classification"][model]["model"]
+            self.models["Classification"][model]["scores"] = cross_val_score(predictor, features,
+                                                                             labels, cv=5,
+                                                                             scoring='accuracy')
 
-    def update_regression_models(self):
-        pass
+    def update_regression_models(self, features, labels):
+        for model in self.models["Regression"]:
+            predictor = self.models["Regression"][model]["model"]
+            self.models["Regression"][model]["scores"] = cross_val_score(predictor, features,
+                                                                         labels, cv=5,
+                                                                         scoring='neg_root_mean_squared_error')
 
     @staticmethod
     def initialize_models():

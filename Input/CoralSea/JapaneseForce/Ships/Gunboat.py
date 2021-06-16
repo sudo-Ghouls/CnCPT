@@ -8,9 +8,10 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Gunboat(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.RED)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
 
     @staticmethod
@@ -28,15 +29,21 @@ class Gunboat(Ship):
 
 
 class KeijoMaru(Gunboat):
-    def __init__(self, name="KeijoMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="KeijoMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class SeikaiMaru(Gunboat):
-    def __init__(self, name="SeikaiMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="SeikaiMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
 
 
 class NikkaiMaru(Gunboat):
-    def __init__(self, name="NikkaiMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="NikkaiMaru", behavior=Gunboat.behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)

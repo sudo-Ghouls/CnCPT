@@ -5,7 +5,6 @@
 import cProfile
 import datetime
 import io
-import itertools
 import os
 import pstats
 import random
@@ -14,9 +13,9 @@ from pstats import SortKey
 import numpy as np
 
 from Simulation.Communication.Network import auto_network_architectures
-from Simulation.Utility.Constants import intialize_constants
 from Simulation.DataManagement.PostProcessing import post_process
 from Simulation.SimulationManager import SimulationManager
+from Simulation.Utility.Constants import intialize_constants
 
 
 class RunController:
@@ -83,7 +82,7 @@ class RunController:
             set_data.append(seed_data)
         return set_data
 
-    def run_seed(self, all_units_dict, controls, constants, seed, output_path):
+    def run_seed(self, all_units, controls, constants, seed, output_path):
         """
 
         :param all_units:
@@ -109,16 +108,13 @@ class RunController:
 
         open(os.path.join(output_path, 'meta_data.txt'), "w").write(output_path)
 
-        networks = auto_network_architectures(all_units_dict)
-        all_units = list(itertools.chain.from_iterable(
-            [all_units_dict[side] for side in all_units_dict if all_units_dict[side]]))
+        networks = auto_network_architectures(all_units)
         SimulationManager = self.SimulationManager(all_units, networks, constants, output_path,
                                                    start_time=controls['start_time'],
                                                    end_time=controls['end_time'])
 
-        for side in all_units_dict:
-            for unit in all_units_dict[side]:
-                unit.register(SimulationManager, constants)
+        for unit in all_units:
+            unit.register(SimulationManager, constants)
 
         self.run(SimulationManager, controls)
         seed_data = post_process(SimulationManager)

@@ -14,9 +14,10 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Fighter(Aircraft):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.BLUE)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.cost = 200
         self.refueling_length = 10 * 60 * 60  # 10 hour
         self.add_sensor(VisualAir())
@@ -76,8 +77,10 @@ class Fighter(Aircraft):
 
 
 class GrummanF4F3Wildcat(Fighter):
-    def __init__(self, name="GrummanF4F3Wildcat", behavior=None, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="GrummanF4F3Wildcat", behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.kinematics.set_max_speed(
             kts_to_ms(288))  # Max speed from https://en.wikipedia.org/wiki/Grumman_F4F_Wildcat
         self.kinematics.set_max_range(max_range=1_360_000)

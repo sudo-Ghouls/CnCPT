@@ -27,27 +27,25 @@ def bearing_change(ang1, ang2):
     return wrapto360(max_ang - min_ang)
 
 
-def propagate(simulation_manager):
-    """
-    This function propagates all units forward in time based on their current velocity and heading
-    :return:
-    """
-    if len(simulation_manager.all_units) == 0:
-        return
-    units_to_propagate = simulation_manager.unit_filter.filter(alive=True, moving=True, docked=False)
+def reckon(distance, bearing_to_go, lat, lon, unit='m'):
+    # handle conversions
+    e = earth_radius * _CONVERSIONS[unit]
 
-    for unit in units_to_propagate:
-        distance_propagated = Geography.propagate(unit, simulation_manager.time_step)
-        unit.kinematics.update_range_traveled(distance_propagated)
-    # list(map(Geography.propagate, units_to_propagate, itertools.repeat(simulation_manager.time_step, len(units_to_propagate))))
+    # convert all latitudes/longitudes to radians
+    lat, lon = np.radians(lat), np.radians(lon)
+    bearing_to_go = np.radians(wrapto360(bearing_to_go))
 
-    units_currently_docked = simulation_manager.unit_filter.filter(alive=True, docked=True)
-    for unit in units_currently_docked:
-        if unit.parent is not None:
-            if unit.docked is True:
-                unit.kinematics.set_location(unit=unit.parent)
-            else:
-                unit.docked = False
+    # do math
+    arc = distance / e
+    new_lat = np.arcsin(np.sin(lat) * np.cos(arc) +
+                        np.cos(lat) * np.sin(arc) * np.cos(bearing_to_go))
+
+    lon += np.arctan2(np.sin(bearing_to_go) * np.sin(arc),
+                      np.cos(lat) * np.cos(arc) -
+                      np.sin(lat) * np.sin(arc) * np.cos(bearing_to_go))
+    new_lat = np.degrees(new_lat)
+    new_lon = np.degrees(lon)
+    return new_lat, new_lon
 
 
 def haversine(point1, point2, unit='m'):

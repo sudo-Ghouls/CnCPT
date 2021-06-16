@@ -4,4 +4,4 @@
 
 
 def process(model_features, labels_log, labels_reg):
-    pass
+    return .5

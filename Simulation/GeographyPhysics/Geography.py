@@ -2,12 +2,34 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-import numpy as np
 from shapely.geometry import Polygon
 
 from Simulation.GeographyPhysics.DistanceMatrix import DistanceMatrix
-from Simulation.GeographyPhysics.core import earth_radius, _CONVERSIONS, wrapto360, haversine
+from Simulation.GeographyPhysics.core import haversine, reckon
 from Simulation.Utility.SideEnum import SideEnum
+
+
+def propagate(simulation_manager):
+    """
+    This function propagates all units forward in time based on their current velocity and heading
+    :return:
+    """
+    if len(simulation_manager.all_units) == 0:
+        return
+    units_to_propagate = simulation_manager.unit_filter.filter(alive=True, moving=True, docked=False)
+
+    for unit in units_to_propagate:
+        distance_propagated = Geography.propagate(unit, simulation_manager.time_step)
+        unit.kinematics.update_range_traveled(distance_propagated)
+    # list(map(Geography.propagate, units_to_propagate, itertools.repeat(simulation_manager.time_step, len(units_to_propagate))))
+
+    units_currently_docked = simulation_manager.unit_filter.filter(alive=True, docked=True)
+    for unit in units_currently_docked:
+        if unit.parent is not None:
+            if unit.docked is True:
+                unit.kinematics.set_location(unit=unit.parent)
+            else:
+                unit.docked = False
 
 
 class Geography:
@@ -34,8 +56,8 @@ class Geography:
         if unit.leader is not None and unit.formation_lock is True:
             leader_location = unit.leader.kinematics.get_location()
             leader_heading = unit.leader.kinematics.get_heading()
-            new_lat, new_lon = Geography.reckon(unit.my_range_from_leader, unit.my_bearing_from_leader,
-                                                leader_location[0], leader_location[1])
+            new_lat, new_lon = reckon(unit.my_range_from_leader, unit.my_bearing_from_leader,
+                                      leader_location[0], leader_location[1])
 
             d = haversine((new_lat, new_lon), (current_lat, current_lon))
             unit.kinematics.set_location(lat=new_lat, lon=new_lon)
@@ -45,30 +67,9 @@ class Geography:
         else:
             d = unit.kinematics.get_speed() * timestep  # m/s * s
             bearing = unit.kinematics.get_heading()
-            new_lat, new_lon = Geography.reckon(d, bearing, current_lat, current_lon)
+            new_lat, new_lon = reckon(d, bearing, current_lat, current_lon)
             unit.kinematics.set_location(lat=new_lat, lon=new_lon)
         return d
-
-    @staticmethod
-    def reckon(distance, bearing, lat, lon, unit='m'):
-        # handle conversions
-        e = earth_radius * _CONVERSIONS[unit]
-
-        # convert all latitudes/longitudes to radians
-        lat, lon = np.radians(lat), np.radians(lon)
-        bearing = np.radians(wrapto360(bearing))
-
-        # do math
-        arc = distance / e
-        new_lat = np.arcsin(np.sin(lat) * np.cos(arc) +
-                            np.cos(lat) * np.sin(arc) * np.cos(bearing))
-
-        lon += np.arctan2(np.sin(bearing) * np.sin(arc),
-                          np.cos(lat) * np.cos(arc) -
-                          np.sin(lat) * np.sin(arc) * np.cos(bearing))
-        new_lat = np.degrees(new_lat)
-        new_lon = np.degrees(lon)
-        return new_lat, new_lon
 
     def update_map(self, new_bounds):
         self.map = Polygon(new_bounds)

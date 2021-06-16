@@ -2,31 +2,23 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-import itertools
-
 from Input.CoralSea.BaseClasses.Ship import Ship
 from Input.CoralSea.UnitedStatesForce.Aircraft.DiveBomber import DouglasSBDDauntless
 from Input.CoralSea.UnitedStatesForce.Aircraft.Fighter import GrummanF4F3Wildcat
 from Input.CoralSea.UnitedStatesForce.Aircraft.TorpedoBomber import DouglasTBDDevastator
+from Input.CoralSea.UnitedStatesForce.Logic.CruiserLogic import behavior_baseline
 from Input.CoralSea.UnitedStatesForce.Sensors.BasicRadarCXAM import BasicRadarCXAM
 from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
-from Input.CoralSea.UnitedStatesForce.Ships.Cruiser import Cruiser
-from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import Destroyer
 from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
-from Simulation.GeographyPhysics import Geography
-from Simulation.Logic.ChildLogic import undock
-from Simulation.Logic.General import is_day
-from Simulation.Units.State import State
-from Simulation.Utility.Area import Area
-from Simulation.Utility.Conversions import kts_to_ms
 from Simulation.Utility.SideEnum import SideEnum
 
 
 class Carrier(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=SideEnum.BLUE)
-        self.cost = 200
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+        self.cost = 2000
         self.add_sensor(BasicRadarCXAM())
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
@@ -45,109 +37,11 @@ class Carrier(Ship):
         self.target_located = False
         self.target_location = None
 
-    @staticmethod
-    def behavior_aggressive(unit, simulation_manager):
-        pass
-
-    @staticmethod
-    def behavior_passive(unit, simulation_manager):
-        pass
-
-    @staticmethod
-    def behavior_startup(unit, simulation_manager):
-        unit.my_carriers = [child for child in unit.group.units if isinstance(child, Carrier)]
-        unit.my_destroyers = [child for child in unit.group.units if isinstance(child, Destroyer)]
-        unit.my_cruisers = [child for child in unit.group.units if isinstance(child, Cruiser)]
-        unit.my_aircraft = [child for child in
-                            itertools.chain.from_iterable([carrier.children for carrier in unit.my_carriers]) if
-                            isinstance(child, (DouglasSBDDauntless, GrummanF4F3Wildcat, DouglasTBDDevastator))]
-
-        unit.brain = unit.behavior_baseline
-
-    @staticmethod
-    def behavior_baseline(unit, simulation_manager):
-        if unit.group.leader is unit:
-            # Morning Op
-            if is_day(simulation_manager.now):
-                if unit.search_mission is None:
-                    unit.deploy_search_mission(unit.enemy_bearing, unit.enemy_distance,
-                                               DouglasSBDDauntless, 10, simulation_manager.now)
-                else:
-                    search_aircraft = [aircraft for aircraft in unit.my_aircraft if
-                                       aircraft.state is State.SEARCH and aircraft.alive]
-                    if len(search_aircraft) < 10:
-                        unit.search_mission = None
-
-                if unit.target_located is True and unit.air_wing_mission is None:
-                    air_wing_composition = {DouglasSBDDauntless: 35,
-                                            GrummanF4F3Wildcat: 17,
-                                            DouglasTBDDevastator: 10}
-                    unit.deploy_carrier_air_wing(unit.target_location, air_wing_composition,
-                                                 simulation_manager.now)
-                else:
-                    air_wing_aircraft = [aircraft for aircraft in unit.my_aircraft if
-                                         aircraft.state is State.ENGAGE and aircraft.alive]
-                    if len(air_wing_aircraft) < 10:
-                        unit.air_wing_mission = None
-
-            # 06:19 - Believing Takagi's carrier force was somewhere north of him, in the vicinity of the Louisiades,
-            # beginning at 06:19, Fletcher directed Yorktown to send 10 Douglas SBD Dauntless dive bombers as scouts to
-            # search that area.
-
-            # 06:25 -  on 7 May, TF 17 was 115 nmi (132 mi; 213 km) south of Rossel Island (13°20′S 154°21′E). At this
-            # time, Fletcher sent Crace's cruiser force, now designated Task Group 17.3 (TG 17.3), to block the Jomard
-            # Passage. Fletcher understood that Crace would be operating without air cover since TF 17's carriers would
-            # be busy trying to locate and attack the Japanese carriers. Detaching Crace reduced the anti-aircraft defenses
-            # for Fletcher's carriers. Nevertheless, Fletcher decided the risk was necessary to ensure the Japanese invasion
-            # forces could not slip through to Port Moresby while he engaged the carriers.[43]
-
-            # 08:15 -  a Yorktown SBD piloted by John L. Nielsen sighted Gotō's force screening the invasion convoy.
-
-            # 10:12 -  Fletcher received a report of an aircraft carrier, ten transports, and 16 warships 30 nmi
-            # (35 mi; 56 km) south of Nielsen's sighting at 10°35′S 152°36′E. The B-17s actually saw the same thing as
-            # Nielsen: Shōhō, Gotō's cruisers, plus the Port Moresby Invasion Force.
-
-            # 10:13 -  the U.S. strike of 93 aircraft—18 Grumman F4F Wildcats, 53 Douglas SBD Dauntless dive bombers,
-            # and 22 Douglas TBD Devastator torpedo bombers—was on its way
-
-            # 10:40 - The U.S. strike aircraft sighted Shōhō a short distance northeast of Misima Island at 10:40 and
-            # deployed to attack.
-        unit.kinematics.set_speed(kts_to_ms(30))
-
-    def deploy_search_mission(self, bearing, distance, aircraft_type, aircraft_number, time):
-        carrier_location = self.kinematics.get_location()
-        center = Geography.reckon(distance, bearing, carrier_location[0], carrier_location[1], unit="nmi")
-        patrol_area = Area.create_patrol_area_from_center(center, 100, 100, unit='nmi')
-        docked_aircraft = [aircraft for aircraft in self.my_aircraft if
-                           aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
-        try:
-            for i in range(aircraft_number):
-                undock(docked_aircraft[i], State.SEARCH, time)
-                docked_aircraft[i].area = patrol_area
-                docked_aircraft[i].kinematics.set_heading(bearing)
-                docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
-        except IndexError:
-            pass
-
-        self.search_mission = True
-
-    def deploy_carrier_air_wing(self, target_location, air_wing_composition, time):
-        carrier_location = self.kinematics.get_location()
-        patrol_area = Area.create_patrol_area_from_center(target_location, 50, 50, unit='nmi')
-        bearing = Geography.bearing(carrier_location, target_location)
-        for aircraft_type in air_wing_composition:
-            docked_aircraft = [aircraft for aircraft in self.my_aircraft if
-                               aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
-            try:
-                for i in range(air_wing_composition[aircraft_type]):
-                    undock(docked_aircraft[i], State.ENGAGE, time)
-                    docked_aircraft[i].area = patrol_area
-                    docked_aircraft[i].kinematics.set_heading(bearing)
-                    docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
-            except IndexError:
-                pass
-
-        self.air_wing_mission = True
+        if not hasattr(self, "aircraft"):
+            self.aircraft = {DouglasSBDDauntless: 35,
+                             GrummanF4F3Wildcat: 17,
+                             DouglasTBDDevastator: 10}
+            self.add_children(self.aircraft)
 
 
 # US carrier aircraft numbers by ship the morning of 7 May: Lexington- 35 Douglas SBD Dauntless dive bombers, 12
@@ -155,18 +49,22 @@ class Carrier(Ship):
 # (Lundstrom 2005b, p. 190).
 
 class Yorktown(Carrier):
-    def __init__(self, name="Yorktown", behavior=Carrier.behavior_startup, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Yorktown", behavior=behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         self.aircraft = {DouglasSBDDauntless: 35,
                          GrummanF4F3Wildcat: 17,
                          DouglasTBDDevastator: 10}
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.add_children(self.aircraft)
 
 
 class Lexington(Carrier):
-    def __init__(self, name="Lexington", behavior=Carrier.behavior_startup, location=None, spawn_polygon=None):
-        super().__init__(name, behavior, location, spawn_polygon)
+    def __init__(self, name="Lexington", behavior=behavior_baseline, location=None, spawn_polygon=None,
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
         self.aircraft = {DouglasSBDDauntless: 35,
                          GrummanF4F3Wildcat: 19,
                          DouglasTBDDevastator: 12}
+        super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
+                         side=side, route=route, parent=parent, network=network, group_data=group_data)
         self.add_children(self.aircraft)
