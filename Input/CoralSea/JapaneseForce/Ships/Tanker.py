@@ -8,11 +8,12 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class Tanker(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
-                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None, side=SideEnum.RED, route=None,
+                 parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
-        self.cost = 200
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)
+        self.cost = 150
 
     @staticmethod
     def behavior_aggressive(unit, simulation_manager):
@@ -30,6 +31,7 @@ class Tanker(Ship):
 
 class TohoMaru(Tanker):
     def __init__(self, name="TohoMaru", behavior=Tanker.behavior_baseline, location=None, spawn_polygon=None,
-                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)

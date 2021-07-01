@@ -27,7 +27,7 @@ blank_group_data = {'group': None,
 
 class Unit:
     def __init__(self, name=None, behavior=base_behavior, location=None, spawn_polygon=None, side=None, route=None,
-                 parent=None, network=None, group_data=None):
+                 parent=None, network=None, group_data=None, kinematics_data=None):
         """
 
         :param name:
@@ -60,6 +60,7 @@ class Unit:
         self.docked = False
 
         # Group Related
+        self.parent = parent
         if group_data is None:
             group_data = blank_group_data
         self.group = group_data.pop('group', None)
@@ -68,7 +69,8 @@ class Unit:
         self.my_range_from_leader = group_data.pop('my_range_from_leader', None)
         self.my_bearing_from_leader = group_data.pop('my_bearing_from_leader', None)
         self.formation_lock = group_data.pop('formation_lock', False)
-        self.parent = group_data.pop('parent', parent)
+        if self.parent is None:
+            self.parent = group_data.pop('parent', parent)
         self.children = group_data.pop('children', [])
 
         # Behavior
@@ -82,7 +84,16 @@ class Unit:
         self.brain = self.unconscious_brain
         self.time_between_thoughts = 600.0  # 600 second timestep
 
-        # Nested Unit creation
+        # Kinematics (need for unpickling object)
+        if kinematics_data is not None:
+            self.kinematics._location = kinematics_data.pop("_location")
+            self.kinematics._heading = kinematics_data.pop("_heading")
+            self.kinematics._speed = kinematics_data.pop("_speed")
+            self.kinematics._max_speed = kinematics_data.pop("_max_speed")
+            self.kinematics._max_range = kinematics_data.pop("_max_range")
+            self.kinematics._range_travelled = kinematics_data.pop("_range_travelled")
+
+            # Nested Unit creation
         self.spawn = {}
 
         # Sensing
@@ -101,9 +112,17 @@ class Unit:
                            'formation_lock': self.formation_lock,
                            'parent': self.parent,
                            'children': self.children}
+
+        kinematics_data = {"_location": self.kinematics._location,
+                           "_heading": self.kinematics._heading,
+                           "_speed": self.kinematics._speed,
+                           "_max_speed": self.kinematics._max_speed,
+                           "_max_range": self.kinematics._max_range,
+                           "_range_travelled": self.kinematics._range_travelled}
+
         return (self.__class__,
                 (self.name, self.my_brain, self.kinematics.get_location(), self.spawn_polygon, self.side, self.route,
-                 self.parent, self.network, self.group_data))
+                 self.parent, self.network, self.group_data, kinematics_data))
 
     def add_sensor(self, sensor):
         """
@@ -136,15 +155,14 @@ class Unit:
                 if type(children_dict[key]) is int:
                     for i in range(children_dict[key]):
                         child_name = "{0}_{1}__{2}".format(key.__name__, i, self.name)
-                        new_child = key(name=child_name)
-                        new_child.parent = self
-                        new_child.side = self.side
+                        new_child = key(name=child_name, network=self.network, parent=self, side=self.side)
                         dock(new_child, 0.0, refuel=False)
                         self.children.append(new_child)
                 else:
                     for new_child in children_dict[key]:
                         new_child.parent = self
                         new_child.side = self.side
+                        new_child.network = self.network
                         dock(new_child, 0.0, refuel=False)
                         self.children.append(new_child)
         self.spawn = {child.name: child for child in self.children}  # to register children to simulation_manager
@@ -156,6 +174,7 @@ class Unit:
         :param simulation_manager:
         :return:
         """
+
         self.my_brain(_self, simulation_manager)
 
     def moving(self):

@@ -43,7 +43,7 @@ def GenerateArchCode(BaseArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocP
 
     for Col in range(len(BaseArchCode)):
         if Col % 2 == 0:
-            options = [None] + list(range(BaseArchCode[Col]))  # Behavior Choice
+            options = [-1] + list(range(BaseArchCode[Col]))  # Behavior Choice
         else:
             options = list(range(BaseArchCode[Col]))
         if len(possible_arch_codes) == 0:
@@ -54,8 +54,8 @@ def GenerateArchCode(BaseArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocP
         # Loop ever every second column setting value equal to None if related Behavior is None
         if Col % 2 == 1:
             for Row in range(np.size(possible_arch_codes, 0)):
-                if possible_arch_codes[Row, Col - 1] is None:
-                    possible_arch_codes[Row, Col] = None
+                if possible_arch_codes[Row, Col - 1] == -1:
+                    possible_arch_codes[Row, Col] = -1
 
     for ArchCode in possible_arch_codes:
         if ValidArch(ArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):
@@ -78,23 +78,23 @@ def ValidArch(ArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxCo
         end_idx = start_idx + max_num_of_unit_i * 2
         # Check if Behavior Columns are Valid
         unit_i_behaviors = ArchCode[start_idx:end_idx:2]
-        if next(iter(set(unit_i_behaviors))) is None:
+        if next(iter(set(unit_i_behaviors))) == -1:
             if LowerBoundPerUnit[Unit_i] > 0:
                 return False
         else:
-            if len([i for i in unit_i_behaviors if i is not None]) < LowerBoundPerUnit[Unit_i]:
+            if len([i for i in unit_i_behaviors if i >= 0]) < LowerBoundPerUnit[Unit_i]:
                 return False
-            if max([i for i in unit_i_behaviors if i is not None]) > MaxConopPerUnit[Unit_i] - 1:
+            if max([i for i in unit_i_behaviors if i >= 0]) > MaxConopPerUnit[Unit_i] - 1:
                 return False
         # Check if Location Columns are Valid
         unit_i_locations = ArchCode[start_idx + 1:end_idx:2]
-        if next(iter(set(unit_i_locations))) is None:
+        if next(iter(set(unit_i_locations))) < 0:
             if LowerBoundPerUnit[Unit_i] > 0:
                 return False
         else:
-            if len([i for i in unit_i_locations if i is not None]) < LowerBoundPerUnit[Unit_i]:
+            if len([i for i in unit_i_locations if i >= 0]) < LowerBoundPerUnit[Unit_i]:
                 return False
-            if max([i for i in unit_i_locations if i is not None]) > NumLocPolys[Unit_i] - 1:
+            if max([i for i in unit_i_locations if i >= 0]) > NumLocPolys[Unit_i] - 1:
                 return False
 
         unit_i_info = np.vstack((unit_i_behaviors, unit_i_locations))

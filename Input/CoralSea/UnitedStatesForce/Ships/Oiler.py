@@ -7,16 +7,19 @@ from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
 from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir
 from Simulation.Utility.Conversions import kts_to_ms
 from Simulation.Utility.SideEnum import SideEnum
+from Simulation.Units.State import State
 
 
 class Oiler(Ship):
     def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
-                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)
         self.cost = 500
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
+        self.state = State.PATROL
 
     @staticmethod
     def behavior_aggressive(unit, simulation_manager):
@@ -33,13 +36,15 @@ class Oiler(Ship):
 
 class Neosho(Oiler):
     def __init__(self, name="Neosho", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None,
-                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)
 
 
 class Tippecanoe(Oiler):
     def __init__(self, name="Tippecanoe", behavior=Oiler.behavior_baseline, location=None, spawn_polygon=None,
-                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None):
+                 side=SideEnum.BLUE, route=None, parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)

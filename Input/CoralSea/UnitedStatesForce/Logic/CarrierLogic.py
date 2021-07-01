@@ -41,11 +41,11 @@ def behavior_aggressive_core(unit, simulation_manager):
     if unit.group.leader is unit:
         if is_day(simulation_manager.now):
             if unit.search_mission is None:
-                deploy_search_mission(unit, -90, 0, DouglasSBDDauntless, 2, simulation_manager.now, append_search=True)
+                deploy_search_mission(unit, -90, 100, DouglasSBDDauntless, 2, simulation_manager.now, append_search=True)
 
             elif len(unit.search_mission) < 10:
                 bearing = -90 + (len(unit.search_mission) + 1) * 18
-                deploy_search_mission(unit, bearing, 0, DouglasSBDDauntless, 2, simulation_manager.now, append_search=True)
+                deploy_search_mission(unit, bearing, 100, DouglasSBDDauntless, 2, simulation_manager.now, append_search=True)
             else:
                 search_aircraft = [aircraft for aircraft in unit.my_aircraft if
                                    aircraft.state is State.SEARCH and aircraft.alive]
@@ -65,6 +65,7 @@ def behavior_aggressive_core(unit, simulation_manager):
                     unit.air_wing_mission = None
         if unit.route is None:
             patrol(unit)
+    unit.kinematics.set_speed(kts_to_ms(30))
 
 
 def behavior_passive(unit, simulation_manager):
@@ -109,6 +110,7 @@ def behavior_passive_core(unit, simulation_manager):
                     unit.air_wing_mission = None
         if unit.route is None:
             patrol(unit)
+    unit.kinematics.set_speed(kts_to_ms(30))
 
 
 def behavior_baseline(unit, simulation_manager):

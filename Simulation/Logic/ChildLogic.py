@@ -13,7 +13,11 @@ def return_to_parent(unit, time):
     if unit.state is not State.RTB:
         unit.state, unit.state_change_time = State.RTB, time
     my_location = Point(unit.kinematics.get_location())
-    parent_location = Point(unit.parent.kinematics.get_location())
+    try:
+        parent_location = Point(unit.parent.kinematics.get_location())
+    except:
+        print(unit.name)
+        raise AttributeError
     distance_to_parent = haversine(my_location, parent_location)
     bearing_to_parent = bearing(my_location, parent_location)
     unit.kinematics.set_heading(bearing_to_parent)
@@ -30,6 +34,7 @@ def dock(unit, time, refuel=True):
     unit.docked = True
     unit.state_change_time = time
     unit.kinematics.reset_range_traveled()
+    unit.kinematics.set_location(unit=unit.parent)
 
 
 def undock(unit, new_state, time):

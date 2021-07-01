@@ -58,7 +58,10 @@ def determine_priority_target_contact(contact_list, method='range', class_priori
     if method == "range":
         data = {}
         for contact in contacts:
-            if not isinstance(contact.truth_unit, excluded_classes):
+            if excluded_classes is not None:
+                if not isinstance(contact.truth_unit, excluded_classes):
+                    data[contact] = contact.distance_to
+            else:
                 data[contact] = contact.distance_to
         if not bool(data):
             return None

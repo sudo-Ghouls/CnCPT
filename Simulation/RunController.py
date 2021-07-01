@@ -80,6 +80,16 @@ class RunController:
         for seed in seeds:
             seed_data = self.run_seed(all_units, controls, constants, seed, output_path)
             set_data.append(seed_data)
+
+        set_data = {"score": np.mean([seed["score"] for seed in set_data]),
+                    "vsm_ships": np.mean([seed["vsm_ships"] for seed in set_data]),
+                    "vsm_aircraft": np.mean([seed["vsm_aircraft"] for seed in set_data]),
+                    "vscm_ships": np.mean([seed["vscm_ships"] for seed in set_data]),
+                    "vscm_aircraft": np.mean([seed["vscm_aircraft"] for seed in set_data]),
+                    "fam_ships": np.mean([seed["fam_ships"] for seed in set_data]),
+                    "fam_aircraft": np.mean([seed["fam_aircraft"] for seed in set_data]),
+                    "facm_ships": np.mean([seed["facm_ships"] for seed in set_data]),
+                    "facm_aircraft": np.mean([seed["facm_aircraft"] for seed in set_data])}
         return set_data
 
     def run_seed(self, all_units, controls, constants, seed, output_path):
@@ -111,7 +121,8 @@ class RunController:
         networks = auto_network_architectures(all_units)
         SimulationManager = self.SimulationManager(all_units, networks, constants, output_path,
                                                    start_time=controls['start_time'],
-                                                   end_time=controls['end_time'])
+                                                   end_time=controls['end_time'],
+                                                   full_data_logging = controls["full_data_logging"])
 
         for unit in all_units:
             unit.register(SimulationManager, constants)

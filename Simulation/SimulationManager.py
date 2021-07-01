@@ -19,7 +19,8 @@ class SimulationManager(Environment):
 
     """
 
-    def __init__(self, units, networks, constants, output_path, start_time=-100000, end_time=-100000):
+    def __init__(self, units, networks, constants, output_path, start_time=-100000, end_time=-100000,
+                 full_data_logging=True):
         super(SimulationManager, self).__init__(initial_time=start_time)
         self.all_units = units
         self.all_units_map = {u.name: u for u in self.all_units}
@@ -38,8 +39,12 @@ class SimulationManager(Environment):
         self.bearings = {}
         self.unit_filter = create_unit_filter()
 
+        self.full_data_logging = full_data_logging
         self.output_path = output_path
         self.data_logger = DataLogger(output_path)
+        self.kill_log = {}
+        self.isr_log = {}
+        self.weapon_log = {}
 
         if constants["simulation_map_bounds"] is not None:
             self.simulation_map_bounds = constants["simulation_map_bounds"]

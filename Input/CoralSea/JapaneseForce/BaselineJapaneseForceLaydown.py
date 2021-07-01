@@ -1,3 +1,8 @@
+# Author: Thomas C.F. Goolsby - tgoolsby@mit.edu
+# This file was created in support of the CNCPT Thesis
+# Fall 2020 - EM.THE
+
+
 from Input.CoralSea.JapaneseForce.Ships.Carrier import *
 from Input.CoralSea.JapaneseForce.Ships.Destroyer import *
 from Input.CoralSea.JapaneseForce.Ships.Gunboat import *
@@ -7,6 +12,7 @@ from Input.CoralSea.JapaneseForce.Ships.LightCrusier import *
 from Input.CoralSea.JapaneseForce.Ships.Minelayer import *
 from Input.CoralSea.JapaneseForce.Ships.Tanker import *
 from Input.CoralSea.JapaneseForce.Ships.Transport import *
+from Simulation.Communication.Network import Network
 from Simulation.GeographyPhysics.Route import Route
 from Simulation.Units.UnitGroup import UnitGroup
 
@@ -101,6 +107,7 @@ def generate():
                                                              route=Route(PortMoresbyLandingForceRoute))
     all_units = CarrierStrikingForce + TulagiInvasionForce + CoveringForce + \
                 PortMoresbyLandingForce
+    Network("JapaneseForce", all_units)
     return all_units
 
 

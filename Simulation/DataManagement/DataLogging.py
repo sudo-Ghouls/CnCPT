@@ -16,9 +16,9 @@ def log(simulation_manager):
 
     :return:
     """
-
-    simulation_manager.data_logger.dump_units_to_file(simulation_manager)
-    simulation_manager.data_logger.update_formatted_unit_data(simulation_manager)
+    if simulation_manager.full_data_logging:
+        simulation_manager.data_logger.dump_units_to_file(simulation_manager)
+        simulation_manager.data_logger.update_formatted_unit_data(simulation_manager)
 
 
 def update_status_bar(simulation_manager):
@@ -94,11 +94,12 @@ class DataLogger:
         self.unit_data_file.write('{"data":[')
 
     def close_data_logger(self, simulation_manager):
-
-        self.unit_data_file.write('{' + '{0}:{1}'.format('"MapBounds"', list(simulation_manager.Geography.map.bounds))
-                                  + '}]}')
+        self.unit_data_file.write(
+            '{' + '{0}:{1}'.format('"MapBounds"', list(simulation_manager.Geography.map.bounds))
+            + '}]}')
         self.unit_data_file.close()
 
         self.formatted_unit_data["MapBounds"] = list(simulation_manager.Geography.map.bounds)
         self.formatted_unit_data_file.write(json.dumps(self.formatted_unit_data, indent=4))
         self.formatted_unit_data_file.close()
+        self.unit_data_file.close()

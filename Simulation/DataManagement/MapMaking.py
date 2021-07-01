@@ -135,5 +135,5 @@ def restart():
         plt.close()
 
 
-plt.show()
-# ani.save(output, progress_callback=lambda i, n: print(f'Saving frame {i} of {n}'))
+# plt.show()
+ani.save(output, progress_callback=lambda i, n: print(f'Saving frame {i} of {n}'))

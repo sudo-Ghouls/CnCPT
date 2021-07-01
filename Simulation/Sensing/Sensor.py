@@ -18,7 +18,6 @@ class Sensor:
     def process(self, parent_unit, simulation_manager):
         self.detect(parent_unit, simulation_manager)
 
-
     def detect(self, parent_unit, simulation_manager):
         targets_detected, target_ranges = [], []
         targets_in_range, ranges = simulation_manager.Geography.targets_in_range(parent_unit, self.max_range)
@@ -31,6 +30,10 @@ class Sensor:
             if target_detected is True:
                 targets_detected.append(target)
                 target_ranges.append(ranges[idx])
+                try:
+                    simulation_manager.isr_log[target] += 1
+                except KeyError:
+                    simulation_manager.isr_log[target] = 1
 
         for idx, target_detected in enumerate(targets_detected):
             self.contacts[target_detected.name] = Contact(target_detected, target_ranges[idx], simulation_manager)

@@ -12,7 +12,7 @@ from Simulation.GeographyPhysics.core import haversine
 
 
 class Area(Polygon):
-    def __init__(self, bounds=None,  name="Polygon"):
+    def __init__(self, bounds=None, name="Polygon"):
         """
 
         """
@@ -23,6 +23,12 @@ class Area(Polygon):
         self._width = None
         self.update_l_and_w()
         self.center = self.lat_lon_average()
+
+    def __reduce__(self):
+        self.group_data = {'_bounds': self._bounds,
+                           'name': self.name}
+        return (self.__class__,
+                (self._bounds, self.name))
 
     def lat_lon_average(self):
         """

@@ -18,7 +18,8 @@ from Input.CoralSea.JapaneseForce.Ships.Minelayer import Minelayer
 from Input.CoralSea.JapaneseForce.Ships.Tanker import Tanker
 from Input.CoralSea.JapaneseForce.Ships.Transport import Transport
 from Input.CoralSea.JapaneseForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface
-from Simulation.GeographyPhysics import Geography
+from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import Destroyer
+from Simulation.GeographyPhysics.core import bearing, reckon
 from Simulation.Logic.ChildLogic import undock
 from Simulation.Logic.General import is_day
 from Simulation.Units.State import State
@@ -28,11 +29,12 @@ from Simulation.Utility.SideEnum import SideEnum
 
 
 class LightCarrier(Ship):
-    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None,
-                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+    def __init__(self, name=None, behavior=None, location=None, spawn_polygon=None, side=SideEnum.RED, route=None,
+                 parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
-        self.cost = 200
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)
+        self.cost = 1500
         self.add_sensor(VisualSurface())
         self.add_weapon(DeckGunAir, 1000)
         self.add_weapon(DeckGunSurface, 1000)
@@ -55,14 +57,6 @@ class LightCarrier(Ship):
         self.enemy_distance = 200
         self.target_located = False
         self.target_location = None
-
-    @staticmethod
-    def behavior_aggressive(unit, simulation_manager):
-        pass
-
-    @staticmethod
-    def behavior_passive(unit, simulation_manager):
-        pass
 
     @staticmethod
     def behavior_startup(unit, simulation_manager):
@@ -110,9 +104,9 @@ class LightCarrier(Ship):
 
         unit.kinematics.set_speed(kts_to_ms(10))
 
-    def deploy_search_mission(self, bearing, distance, aircraft_type, aircraft_number, time):
+    def deploy_search_mission(self, bearing_to, distance, aircraft_type, aircraft_number, time):
         carrier_location = self.kinematics.get_location()
-        center = Geography.reckon(distance, bearing, carrier_location[0], carrier_location[1], unit="nmi")
+        center = reckon(distance, bearing_to, carrier_location[0], carrier_location[1], unit="nmi")
         patrol_area = Area.create_patrol_area_from_center(center, 100, 100, unit='nmi')
         docked_aircraft = [aircraft for aircraft in self.my_aircraft if
                            aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
@@ -120,7 +114,7 @@ class LightCarrier(Ship):
             for i in range(aircraft_number):
                 undock(docked_aircraft[i], State.SEARCH, time)
                 docked_aircraft[i].area = patrol_area
-                docked_aircraft[i].kinematics.set_heading(bearing)
+                docked_aircraft[i].kinematics.set_heading(bearing_to)
                 docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
         except IndexError:
             pass
@@ -130,7 +124,7 @@ class LightCarrier(Ship):
     def deploy_carrier_air_wing(self, target_location, air_wing_composition, time):
         carrier_location = self.kinematics.get_location()
         patrol_area = Area.create_patrol_area_from_center(target_location, 50, 50, unit='nmi')
-        bearing = Geography.bearing(carrier_location, target_location)
+        bearing_to = bearing(carrier_location, target_location)
         for aircraft_type in air_wing_composition:
             docked_aircraft = [aircraft for aircraft in self.my_aircraft if
                                aircraft.state is State.DOCKED_READY and isinstance(aircraft, aircraft_type)]
@@ -138,7 +132,7 @@ class LightCarrier(Ship):
                 for i in range(air_wing_composition[aircraft_type]):
                     undock(docked_aircraft[i], State.ENGAGE, time)
                     docked_aircraft[i].area = patrol_area
-                    docked_aircraft[i].kinematics.set_heading(bearing)
+                    docked_aircraft[i].kinematics.set_heading(bearing_to)
                     docked_aircraft[i].kinematics.set_speed(docked_aircraft[i].kinematics._max_speed / 2)
             except IndexError:
                 pass
@@ -153,9 +147,10 @@ class LightCarrier(Ship):
 
 class Shoho(LightCarrier):
     def __init__(self, name="Shoho", behavior=LightCarrier.behavior_startup, location=None, spawn_polygon=None,
-                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None):
+                 side=SideEnum.RED, route=None, parent=None, network=None, group_data=None, kinematics_data=None):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
-                         side=side, route=route, parent=parent, network=network, group_data=group_data)
+                         side=side, route=route, parent=parent, network=network, group_data=group_data,
+                         kinematics_data=kinematics_data)
         self.aircraft = {NakajimaB5NType97: 6,
                          A6M2Zero: 8,
                          MitsubishiA5MType96: 4}

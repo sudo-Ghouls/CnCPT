@@ -2,6 +2,9 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
+from Simulation.GeographyPhysics.core import reckon
+from Simulation.Logic.Patrol import patrol
+from Simulation.Utility.Area import Area
 from Simulation.Utility.Conversions import kts_to_ms
 
 

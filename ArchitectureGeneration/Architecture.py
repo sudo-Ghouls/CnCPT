@@ -1,6 +1,7 @@
 # Author: Thomas C.F. Goolsby - tgoolsby@mit.edu
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
+from Simulation.Communication.Network import Network
 from Simulation.Units.UnitGroup import UnitGroup
 
 
@@ -18,7 +19,7 @@ class Architecture:
         max_num_per_unit = [manager.CompCon.units[unit].maxNumber for unit in unit_keys]
         for class_idx, UnitClass in enumerate(unit_keys):
             for unit_idx in range(max_num_per_unit[class_idx]):
-                if code[code_idx] is not None:
+                if code[code_idx] >= 0:
                     unit_name = "{0}_{1}_{2}".format(side.name, UnitClass.__name__, unit_idx)
                     unit_behavior = manager.CONOPCon.units[UnitClass].CONOPs[code[code_idx]]
                     spawn_polygon = manager.CompCon.units[UnitClass].Polygons[code[code_idx + 1]]
@@ -29,10 +30,11 @@ class Architecture:
 
         sort_polygon_group_by_leadership(polygon_groups, manager.LeadershipPriority)
         for idx, polygon_group in enumerate(polygon_groups):
-            polygon_unit_group = UnitGroup.construct_unit_group("Polygon_{0}".format(idx + 1),
+            polygon_unit_group = UnitGroup.construct_unit_group(polygon_group,
                                                                 polygon_groups[polygon_group],
                                                                 leader=polygon_groups[polygon_group][0])
             units_grouped += polygon_unit_group
+        Network(name, units_grouped)
         return Architecture(units_grouped, name, side, code)
 
 

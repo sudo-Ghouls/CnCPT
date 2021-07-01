@@ -35,14 +35,17 @@ class Weapon:
                 time_elapsed = simulation_manager.now - self.engagement_history_dict[target]
                 if time_elapsed >= self.engagement_rate:
                     target_killed = self.calculate_pk(target=target)
+                    self.update_weapon_log(target_killed, parent_unit, simulation_manager)
                     self.engagement_history_dict[target] = simulation_manager.now
                 else:
                     continue
             else:
                 target_killed = self.calculate_pk(target=target)
+                self.update_weapon_log(target_killed, parent_unit, simulation_manager)
                 self.engagement_history_dict[target] = simulation_manager.now
             if target_killed is True:
                 targets_killed.append(target)
+                simulation_manager.kill_log[target] = simulation_manager.now
 
         # now kill all the units that died in the last set of salvos
         for target_killed in targets_killed:
@@ -54,3 +57,27 @@ class Weapon:
         if dice_roll < self.pk:
             return True
         return False
+
+    def update_weapon_log(self, target_killed, parent_unit, simulation_manager):
+        try:
+            if target_killed:
+                simulation_manager.weapon_log[parent_unit.side][self]['Success'] += 1
+            else:
+                simulation_manager.weapon_log[parent_unit.side][self]['Failure'] += 1
+        except KeyError:
+            try:
+                if target_killed:
+                    simulation_manager.weapon_log[parent_unit.side][self]['Success'] = 1
+                else:
+                    simulation_manager.weapon_log[parent_unit.side][self]['Failure'] = 1
+            except KeyError:
+                try:
+                    if target_killed:
+                        simulation_manager.weapon_log[parent_unit.side][self] = {'Success': 1}
+                    else:
+                        simulation_manager.weapon_log[parent_unit.side][self] = {'Failure': 1}
+                except KeyError:
+                    if target_killed:
+                        simulation_manager.weapon_log[parent_unit.side] = {self: {'Success': 1}}
+                    else:
+                        simulation_manager.weapon_log[parent_unit.side] = {self: {'Failure': 1}}

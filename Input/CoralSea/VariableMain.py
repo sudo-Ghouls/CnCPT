@@ -1,3 +1,8 @@
+# Author: Thomas C.F. Goolsby - tgoolsby@mit.edu
+# This file was created in support of the CNCPT Thesis
+# Fall 2020 - EM.THE
+
+
 import os
 
 from ArchitectureGeneration.Constraints.CONOPCon import CONOPCon
@@ -5,9 +10,7 @@ from ArchitectureGeneration.Constraints.CompositionCon import CompositionCon
 from Core.Manager import Manager
 from Input.CoralSea.JapaneseForce.BaselineJapaneseForceLaydown import BaselineJapaneseForce
 from Input.CoralSea.UnitedStatesForce.Logic import CarrierLogic
-from Input.CoralSea.UnitedStatesForce.Logic import CruiserLogic
-from Input.CoralSea.UnitedStatesForce.Logic import DestroyerLogic
-from Input.CoralSea.UnitedStatesForce.Logic import OilerLogic
+from Input.CoralSea.UnitedStatesForce.Logic import GeneralShipLogic
 from Input.CoralSea.UnitedStatesForce.Ships.Carrier import Carrier
 from Input.CoralSea.UnitedStatesForce.Ships.Cruiser import Cruiser
 from Input.CoralSea.UnitedStatesForce.Ships.Destroyer import Destroyer
@@ -44,26 +47,34 @@ if __name__ == "__main__":
 
     MyCompsCon = CompositionCon(unitList, lowerBound, upperBound, Polygons)
 
-    CONOPList = [[CarrierLogic.behavior_baseline, CarrierLogic.behavior_aggressive, CarrierLogic.behavior_passive],
+    CONOPList = [[CarrierLogic.behavior_baseline,
+                  CarrierLogic.behavior_aggressive,
+                  CarrierLogic.behavior_passive],
                  # CVN
-                 [CruiserLogic.behavior_baseline, CruiserLogic.behavior_aggressive, CruiserLogic.behavior_passive],
+                 [GeneralShipLogic.behavior_baseline,
+                  GeneralShipLogic.behavior_aggressive,
+                  GeneralShipLogic.behavior_passive],
                  # CG
-                 [DestroyerLogic.behavior_baseline, DestroyerLogic.behavior_aggressive,
-                  DestroyerLogic.behavior_passive],  # DDG
-                 [OilerLogic.behavior_baseline]]  # Oilier
+                 [GeneralShipLogic.behavior_baseline,
+                  GeneralShipLogic.behavior_aggressive,
+                  GeneralShipLogic.behavior_passive],
+                 # DDG
+                 [GeneralShipLogic.behavior_baseline]]  # Oilier
 
     MyCONOPsCOn = CONOPCon(unitList, CONOPList)
     MyHeurCon = None
 
     # Initialize Manager
     filepath = os.getcwd()
-    MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce, LeadershipPriority)
+    MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce, LeadershipPriority, seed=0,
+                        MC_size=1)
     controls = {"start_time": 0.0,
-                "end_time": 3 * 24 * 3600.0,
+                "end_time": 1 * 24 * 3600.0,
                 "utility_threshold": .9,
-                "variance_threshold": .1,
+                "variance_threshold": .001,
                 "cutoff_metric": 10000,
-                "max_generations": 5}
+                "max_generations": 50,
+                "full_data_logging": False}
 
     constants = {"simulation_map_bounds": ((-18.02904145799271, 149.9831854228132),
                                            (-18.0006410087399, 164.9716046029078),
@@ -71,5 +82,5 @@ if __name__ == "__main__":
                                            (-5.001921913555804, 150.0046640118783),
                                            (-18.02904145799271, 149.9831854228132))}
 
-    MyManager.runCnCPT(controls, constants, run_size=10,
-                       output_path=r"C:\Users\Thomas Goolsby\iCloudDrive\Documents\MIT\System Design & Management\Thesis_Working_Area\CnCPT\Output\CoralSea")
+    MyManager.runCnCPT(controls, constants, run_size=50,
+                       output_path=r"D:\Thesis\CoralSea")

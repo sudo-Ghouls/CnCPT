@@ -27,7 +27,7 @@ class ArchitectureBreeder:
             NewCode = self.ArchCodes[InitialPopulationDraw[i]]
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
-                str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-'))
+                str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
             ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
 
             # Apply Heuristics
@@ -44,52 +44,70 @@ class ArchitectureBreeder:
 
         return population_sample
 
-    def breedArchitectures(self, manager, side, random_ratio=.3, predicted_ratio=.3, parent_size=2):
-        population_sample, i = [], 0
-        numRandom = round(self.NSamples * random_ratio)
+    def breedArchitectures(self, manager, side, breed_ratio=.7, predicted_ratio=.3, parent_size=2):
+        population_sample, i, total_breed = [], 0, 0
+        numBreed = round(self.NSamples * breed_ratio)
         numPredicted = round(self.NSamples * predicted_ratio)
-        PopulationDraw = random.sample(range(len(self.ArchCodes)), numRandom * 5)
-        while len(population_sample) < numRandom:
+        PopulationDraw = random.sample(range(len(self.ArchCodes)), len(self.ArchCodes))
+
+        # fill  with breeding from last generation
+        num_parents = np.max((2,round(self.NSamples*.1)))
+        parents_idxs = np.argpartition(self.LastGenerationRawResults, -num_parents)[-num_parents:]
+        parents = [self.LastGenerationArchCodes[p_idx] for p_idx in parents_idxs]
+        while len(population_sample) < numBreed:
+            ArchitectureInstance, break_out = self.breedGeneration(parents, manager, side)
+            if break_out:
+                break
+            population_sample.append(ArchitectureInstance)
+            total_breed += 1
+
+        # Incorporate predicted peak performers
+        if manager.peak_performing_predictions is not None:
+            while len(population_sample) - total_breed < numPredicted:
+                pass
+
+        # fill  with random
+        while len(population_sample) < self.NSamples:
             NewCode = self.ArchCodes[PopulationDraw[i]]
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
-                str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-'))
+                str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
             ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
             if NewCodeString not in self.Architectures.keys():
                 self.Architectures[NewCodeString] = None
                 population_sample.append(ArchitectureInstance)
             i += 1
 
-        # Incorporate predicted peak performers
-        if manager.peak_performing_predictions is not None:
-            while len(population_sample) - numRandom < numPredicted:
-                pass
-
-        # fill remaining with breeding from last generation
-        parents_idxs = np.argpartition(self.LastGenerationRawResults, -2)[-2:]
-        parents = [self.LastGenerationArchCodes[p_idx] for p_idx in parents_idxs]
-        while len(population_sample) < self.NSamples:
-            ArchitectureInstance = self.breedGeneration(parents)
-            population_sample.append(ArchitectureInstance)
-            # TODO: handle the rare chance that the "breeded" archietcture already exists
-
         return population_sample
 
-    def breedGeneration(self, parents):
-        new_codes, new_code = [], []
-        for gene_idx in range(0, int(len(self.BaseArchCode) / 2), 2):
-            parent_choice = np.random.randint(0, 1)
-            gene_choice = parents[parent_choice][gene_idx:gene_idx + 1]
-            new_code.append(gene_choice)
-        return new_code
+    def breedGeneration(self, parents, manager, side):
+        loops = 0
+        while loops < 100:
+            NewCode = []
+            for gene_idx in range(0, int(len(self.BaseArchCode)), 2):
+                parent_choice = np.random.randint(len(parents))
+                gene_choice = list(parents[parent_choice][gene_idx:gene_idx + 2])
+                NewCode += gene_choice
+            NewCode = np.array(NewCode)
+            NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
+            ArchitectureName = "Architecture {0}".format(
+                str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
+            ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
+            if NewCodeString not in self.Architectures.keys():
+                loops = 0
+                self.Architectures[NewCodeString] = None
+                return ArchitectureInstance, False
+            loops += 1
+        return None, True
 
     def updateLastGeneration(self, generation_architectures, generation_results):
+        scores = [generation["score"] for generation in generation_results]
         data, ArchCodes = {}, []
         for idx, arch in enumerate(generation_architectures):
             ArchCodeString = str(arch.code).replace(' ', '').replace('\n', '').replace('None', '-')
-            ArchResult = generation_results[idx]
+            ArchResult = scores[idx]
             data[ArchCodeString] = ArchResult
             ArchCodes.append(arch.code)
         self.LastGenerationDataDict = data
         self.LastGenerationArchCodes = ArchCodes
-        self.LastGenerationRawResults = np.array(generation_results)
+        self.LastGenerationRawResults = np.array(scores)
