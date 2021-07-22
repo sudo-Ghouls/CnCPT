@@ -52,7 +52,7 @@ def post_process(simulation_manager):
     #                  facm_ships,
     #                  facm_aircraft])
 
-    score = .40 * (vscm_blue) + .6 * (facm_red)
+    score = .2 * (vscm_blue) + .80 * (facm_red)
 
     # score = np.mean([vsm, vsrm, vscm, vimm, vwum, fam, farm, facm, fimm, fwum])
     results = {"score": score,
@@ -60,10 +60,12 @@ def post_process(simulation_manager):
                "vsm_aircraft": vsm_aircraft,
                "vscm_ships": vscm_ships,
                "vscm_aircraft": vscm_aircraft,
+               "vscm_blue": vscm_blue,
                "fam_ships": fam_ships,
                "fam_aircraft": fam_aircraft,
                "facm_ships": facm_ships,
-               "facm_aircraft": facm_aircraft}
+               "facm_aircraft": facm_aircraft,
+               "facm_red": facm_red}
     return results
 
 

@@ -28,7 +28,7 @@ class ArchitectureBreeder:
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
                 str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
-            ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
+            ArchitectureInstance = Architecture(None, ArchitectureName, side, NewCode)
 
             # Apply Heuristics
             if manager.HeurCon is not None:
@@ -44,18 +44,26 @@ class ArchitectureBreeder:
 
         return population_sample
 
-    def breedArchitectures(self, manager, side, breed_ratio=.7, predicted_ratio=.3, parent_size=2):
+    def breedArchitectures(self, manager, side, breed_ratio=.7, predicted_ratio=.3, parent_size=2,
+                           breed_method="crossover"):
         population_sample, i, total_breed = [], 0, 0
+        numParents = np.max((2, round(self.NSamples * .1)))
         numBreed = round(self.NSamples * breed_ratio)
+        if manager.generation <= manager.generations_prior_to_breeding:
+            numBreed = numParents
         numPredicted = round(self.NSamples * predicted_ratio)
         PopulationDraw = random.sample(range(len(self.ArchCodes)), len(self.ArchCodes))
-
         # fill  with breeding from last generation
-        num_parents = np.max((2,round(self.NSamples*.1)))
-        parents_idxs = np.argpartition(self.LastGenerationRawResults, -num_parents)[-num_parents:]
+        parents_idxs = np.argsort(self.LastGenerationRawResults)[-numParents:]
         parents = [self.LastGenerationArchCodes[p_idx] for p_idx in parents_idxs]
+        population_sample = self.addParentsToSample(parents, manager, side, population_sample)
         while len(population_sample) < numBreed:
-            ArchitectureInstance, break_out = self.breedGeneration(parents, manager, side)
+            if breed_method == "crossover":
+                ArchitectureInstance, break_out = self.breedGenerationCrossOverSelection(parents, manager, side)
+            elif breed_method == "random":
+                ArchitectureInstance, break_out = self.breedGenerationRandomGeneSelection(parents, manager, side)
+            else:  # default to crossover for now
+                ArchitectureInstance, break_out = self.breedGenerationCrossOverSelection(parents, manager, side)
             if break_out:
                 break
             population_sample.append(ArchitectureInstance)
@@ -72,7 +80,7 @@ class ArchitectureBreeder:
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
                 str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
-            ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
+            ArchitectureInstance = Architecture(None, ArchitectureName, side, NewCode)
             if NewCodeString not in self.Architectures.keys():
                 self.Architectures[NewCodeString] = None
                 population_sample.append(ArchitectureInstance)
@@ -80,7 +88,7 @@ class ArchitectureBreeder:
 
         return population_sample
 
-    def breedGeneration(self, parents, manager, side):
+    def breedGenerationRandomGeneSelection(self, parents, manager, side):
         loops = 0
         while loops < 100:
             NewCode = []
@@ -92,7 +100,7 @@ class ArchitectureBreeder:
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
                 str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
-            ArchitectureInstance = Architecture.create_from_code(NewCode, manager, side, ArchitectureName)
+            ArchitectureInstance = Architecture(None, ArchitectureName, side, NewCode)
             if NewCodeString not in self.Architectures.keys():
                 loops = 0
                 self.Architectures[NewCodeString] = None
@@ -100,8 +108,37 @@ class ArchitectureBreeder:
             loops += 1
         return None, True
 
+    def breedGenerationCrossOverSelection(self, parents, manager, side):
+        loops = 0
+        while loops < 100:
+            NewCode = []
+            parents_choice = np.random.choice(len(parents), size=2, replace=False)
+            cross_over_point = np.random.randint(len(self.BaseArchCode))
+            genes_parent_1 = parents[parents_choice[0]][:cross_over_point]
+            genes_parent_2 = parents[parents_choice[1]][cross_over_point:]
+            NewCode = np.hstack((genes_parent_1, genes_parent_2))
+            NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
+            ArchitectureName = "Architecture {0}".format(
+                str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
+            ArchitectureInstance = Architecture.create_from_code(NewCode, manager.CONOPCon, manager.CompCon,
+                                                                 manager.LeadershipPriority, side, ArchitectureName)
+            if NewCodeString not in self.Architectures.keys():
+                self.Architectures[NewCodeString] = None
+                return ArchitectureInstance, False
+            loops += 1
+        return None, True
+
+    def addParentsToSample(self, parents, manager, side, population_sample):
+        for NewCode in parents:
+            ArchitectureName = "Architecture {0}".format(
+                str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
+            ArchitectureInstance = Architecture.create_from_code(NewCode, manager.CONOPCon, manager.CompCon,
+                                                                 manager.LeadershipPriority, side, ArchitectureName)
+            population_sample.append(ArchitectureInstance)
+        return population_sample
+
     def updateLastGeneration(self, generation_architectures, generation_results):
-        scores = [generation["score"] for generation in generation_results]
+        scores = [generation["score_mean_variance"] for generation in generation_results]
         data, ArchCodes = {}, []
         for idx, arch in enumerate(generation_architectures):
             ArchCodeString = str(arch.code).replace(' ', '').replace('\n', '').replace('None', '-')

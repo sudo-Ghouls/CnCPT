@@ -12,6 +12,7 @@ from pstats import SortKey
 
 import numpy as np
 
+from ArchitectureGeneration.Architecture import Architecture
 from Simulation.Communication.Network import auto_network_architectures
 from Simulation.DataManagement.PostProcessing import post_process
 from Simulation.SimulationManager import SimulationManager
@@ -44,7 +45,9 @@ class RunController:
         except FileExistsError:
             pass
 
-    def run_set(self, all_units, controls, seeds=[0], name=None, constants=None):
+    def run_set(self, CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator, VariableArchInstance, controls,
+                seeds=[0], name=None,
+                constants=None):
         """
 
         :param all_units:
@@ -54,7 +57,8 @@ class RunController:
         :param constants:
         :return:
         """
-        set_data = []
+        set_data = {}
+
         if constants is None:
             constants = intialize_constants()
 
@@ -78,19 +82,38 @@ class RunController:
 
         # Run Seeds
         for seed in seeds:
+            FixedArchUnits = FixedArchGenerator()
+            VariableArch = Architecture.create_from_code(VariableArchInstance.code, CONOPCon, CompCon,
+                                                         LeadershipPriority, VariableArchInstance.side,
+                                                         VariableArchInstance.name)
+            all_units = VariableArch.units + FixedArchUnits
             seed_data = self.run_seed(all_units, controls, constants, seed, output_path)
-            set_data.append(seed_data)
-
-        set_data = {"score": np.mean([seed["score"] for seed in set_data]),
-                    "vsm_ships": np.mean([seed["vsm_ships"] for seed in set_data]),
-                    "vsm_aircraft": np.mean([seed["vsm_aircraft"] for seed in set_data]),
-                    "vscm_ships": np.mean([seed["vscm_ships"] for seed in set_data]),
-                    "vscm_aircraft": np.mean([seed["vscm_aircraft"] for seed in set_data]),
-                    "fam_ships": np.mean([seed["fam_ships"] for seed in set_data]),
-                    "fam_aircraft": np.mean([seed["fam_aircraft"] for seed in set_data]),
-                    "facm_ships": np.mean([seed["facm_ships"] for seed in set_data]),
-                    "facm_aircraft": np.mean([seed["facm_aircraft"] for seed in set_data])}
-        return set_data
+            set_data[seed] = seed_data
+        data = {"score_mean": np.mean([set_data[seed]["score"] for seed in set_data]),
+                "score_var": np.var([set_data[seed]["score"] for seed in set_data]),
+                "vsm_ships_mean": np.mean([set_data[seed]["vsm_ships"] for seed in set_data]),
+                "vsm_ships_var": np.var([set_data[seed]["vsm_ships"] for seed in set_data]),
+                "vsm_aircraft_mean": np.mean([set_data[seed]["vsm_aircraft"] for seed in set_data]),
+                "vsm_aircraft_var": np.var([set_data[seed]["vsm_aircraft"] for seed in set_data]),
+                "vscm_ships_mean": np.mean([set_data[seed]["vscm_ships"] for seed in set_data]),
+                "vscm_ships_var": np.var([set_data[seed]["vscm_ships"] for seed in set_data]),
+                "vscm_aircraft_mean": np.mean([set_data[seed]["vscm_aircraft"] for seed in set_data]),
+                "vscm_aircraft_var": np.var([set_data[seed]["vscm_aircraft"] for seed in set_data]),
+                "vscm_blue_mean": np.mean([set_data[seed]["vscm_blue"] for seed in set_data]),
+                "vscm_blue_var": np.var([set_data[seed]["vscm_blue"] for seed in set_data]),
+                "fam_ships_mean": np.mean([set_data[seed]["fam_ships"] for seed in set_data]),
+                "fam_ships_var": np.var([set_data[seed]["fam_ships"] for seed in set_data]),
+                "fam_aircraft_mean": np.mean([set_data[seed]["fam_aircraft"] for seed in set_data]),
+                "fam_aircraft_var": np.var([set_data[seed]["fam_aircraft"] for seed in set_data]),
+                "facm_ships_mean": np.mean([set_data[seed]["facm_ships"] for seed in set_data]),
+                "facm_ships_var": np.var([set_data[seed]["facm_ships"] for seed in set_data]),
+                "facm_aircraft_mean": np.mean([set_data[seed]["facm_aircraft"] for seed in set_data]),
+                "facm_aircraft_var": np.var([set_data[seed]["facm_aircraft"] for seed in set_data]),
+                "facm_red_mean": np.mean([set_data[seed]["facm_red"] for seed in set_data]),
+                "facm_red_var": np.var([set_data[seed]["facm_red"] for seed in set_data]),
+                "individual_seed_data_mean": set_data}
+        data["score_mean_variance"] = data["score_mean"] - ((2 * ((data["score_var"]) ** 2)) / 2.0)
+        return data
 
     def run_seed(self, all_units, controls, constants, seed, output_path):
         """
@@ -102,8 +125,6 @@ class RunController:
         :param output_path:
         :return:
         """
-        random.seed(seed)
-        np.random.seed(seed)
 
         seed_string = self.seedstamp_format % seed
         output_path = os.path.join(output_path, seed_string)
@@ -122,7 +143,10 @@ class RunController:
         SimulationManager = self.SimulationManager(all_units, networks, constants, output_path,
                                                    start_time=controls['start_time'],
                                                    end_time=controls['end_time'],
-                                                   full_data_logging = controls["full_data_logging"])
+                                                   full_data_logging=controls["full_data_logging"])
+
+        # Seed
+        random.seed(seed)
 
         for unit in all_units:
             unit.register(SimulationManager, constants)

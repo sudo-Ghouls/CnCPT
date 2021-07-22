@@ -5,8 +5,6 @@
 
 import sys
 
-import numpy as np
-
 
 class Weapon:
     def __init__(self, name, amount=sys.maxsize):
@@ -34,13 +32,13 @@ class Weapon:
                 # check if unit has been shot at yet,
                 time_elapsed = simulation_manager.now - self.engagement_history_dict[target]
                 if time_elapsed >= self.engagement_rate:
-                    target_killed = self.calculate_pk(target=target)
+                    target_killed = self.calculate_pk(simulation_manager, target=target)
                     self.update_weapon_log(target_killed, parent_unit, simulation_manager)
                     self.engagement_history_dict[target] = simulation_manager.now
                 else:
                     continue
             else:
-                target_killed = self.calculate_pk(target=target)
+                target_killed = self.calculate_pk(simulation_manager, target=target)
                 self.update_weapon_log(target_killed, parent_unit, simulation_manager)
                 self.engagement_history_dict[target] = simulation_manager.now
             if target_killed is True:
@@ -52,8 +50,8 @@ class Weapon:
             target_name = target_killed.name
             simulation_manager.all_units_map[target_name].alive = False
 
-    def calculate_pk(self, **kwargs):
-        dice_roll = np.random.random()
+    def calculate_pk(self, simulation_manager, **kwargs):
+        dice_roll = simulation_manager.random.random_sample()
         if dice_roll < self.pk:
             return True
         return False

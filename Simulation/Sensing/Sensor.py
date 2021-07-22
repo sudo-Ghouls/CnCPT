@@ -3,9 +3,6 @@
 # Fall 2020 - EM.THE
 
 
-import numpy as np
-
-
 class Sensor:
     def __init__(self, name):
         self.parent_unit = None  # updated when added to unit
@@ -26,7 +23,7 @@ class Sensor:
             target = simulation_manager.all_units_map[target_name]
             if target.side is parent_unit.side:
                 continue
-            target_detected = self.calculate_pd(target=target)
+            target_detected = self.calculate_pd(simulation_manager, target=target, )
             if target_detected is True:
                 targets_detected.append(target)
                 target_ranges.append(ranges[idx])
@@ -38,8 +35,8 @@ class Sensor:
         for idx, target_detected in enumerate(targets_detected):
             self.contacts[target_detected.name] = Contact(target_detected, target_ranges[idx], simulation_manager)
 
-    def calculate_pd(self, **kwargs):
-        dice_roll = np.random.random()
+    def calculate_pd(self, simulation_manager, **kwargs):
+        dice_roll = simulation_manager.random.random_sample()
         if dice_roll < self.pd:
             return True
         return False

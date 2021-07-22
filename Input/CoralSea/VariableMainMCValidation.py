@@ -31,19 +31,19 @@ if __name__ == "__main__":
     unitList = [Carrier, Cruiser, Destroyer, Oiler]
     LeadershipPriority = [Carrier, Cruiser, Destroyer, Oiler]  # used for auto grouping in architecture generation
 
-    lowerBound = [0,  # CVN
-                  0,  # CG
-                  0,  # DDG
-                  0]  # Oilier
+    lowerBound = [2,  # CVN
+                  5,  # CG
+                  10,  # DDG
+                  2]  # Oilier
     upperBound = [4,  # CVN
                   10,  # CG
                   15,  # DDG
                   4]  # Oilier
 
-    Polygons = [[Blue_Polygon_1, Blue_Polygon_2, Blue_Polygon_3, Blue_Polygon_4],  # CVN
-                [Blue_Polygon_1, Blue_Polygon_2, Blue_Polygon_3, Blue_Polygon_4],  # CG
-                [Blue_Polygon_1, Blue_Polygon_2, Blue_Polygon_3, Blue_Polygon_4],  # DDG
-                [Blue_Polygon_1, Blue_Polygon_2, Blue_Polygon_3, Blue_Polygon_4]]  # Oiler
+    Polygons = [[Blue_Polygon_1, Blue_Polygon_2],  # CVN
+                [Blue_Polygon_1, Blue_Polygon_2],  # CG
+                [Blue_Polygon_1, Blue_Polygon_2],  # DDG
+                [Blue_Polygon_1, Blue_Polygon_2]]  # Oiler
 
     MyCompsCon = CompositionCon(unitList, lowerBound, upperBound, Polygons)
 
@@ -66,15 +66,15 @@ if __name__ == "__main__":
 
     # Initialize Manager
     filepath = os.getcwd()
-    MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce, LeadershipPriority, seed=0,
-                        MC_size=1)
+    MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce, LeadershipPriority,
+                        MC_size=3)
     controls = {"start_time": 0.0,
                 "end_time": 1 * 24 * 3600.0,
                 "utility_threshold": .9,
                 "variance_threshold": .001,
                 "cutoff_metric": 10000,
-                "max_generations": 5,
-                "full_data_logging": False}
+                "max_generations": 20,
+                "full_data_logging": True}
 
     constants = {"simulation_map_bounds": ((-18.02904145799271, 149.9831854228132),
                                            (-18.0006410087399, 164.9716046029078),
@@ -82,5 +82,5 @@ if __name__ == "__main__":
                                            (-5.001921913555804, 150.0046640118783),
                                            (-18.02904145799271, 149.9831854228132))}
 
-    MyManager.runCnCPT(controls, constants, run_size=5,
-                       output_path=r"D:\Thesis\CoralSea")
+    MyManager.runCnCPT(controls, constants, run_size=30,
+                       output_path=r"D:\Thesis\CoralSeaConstrained_MC_3_Gen_20_RS_30")

@@ -3,6 +3,7 @@
 # Fall 2020 - EM.THE
 import time
 
+import numpy as np
 from simpy.core import *
 
 from Simulation.Communication.core import communicate
@@ -20,7 +21,7 @@ class SimulationManager(Environment):
     """
 
     def __init__(self, units, networks, constants, output_path, start_time=-100000, end_time=-100000,
-                 full_data_logging=True):
+                 full_data_logging=True, seed=0):
         super(SimulationManager, self).__init__(initial_time=start_time)
         self.all_units = units
         self.all_units_map = {u.name: u for u in self.all_units}
@@ -29,6 +30,7 @@ class SimulationManager(Environment):
         self._next_time = None
         self.start_time = start_time
         self.end_time = end_time
+        self.random = np.random.RandomState(seed)
 
         self.start_real_time = time.clock()
         self.current_real_time = time.clock()
