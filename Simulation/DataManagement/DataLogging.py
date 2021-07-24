@@ -16,6 +16,15 @@ def log(simulation_manager):
 
     :return:
     """
+    alive_blue_ships = simulation_manager.unit_filter.filter(alive=True, blue=True, is_ship=True)
+    alive_red_ships = simulation_manager.unit_filter.filter(alive=True, red=True, is_ship=True)
+    alive_blue_aircraft = simulation_manager.unit_filter.filter(alive=True, blue=True, is_aircraft=True)
+    alive_red_aircraft = simulation_manager.unit_filter.filter(alive=True, red=True, is_aircraft=True)
+    simulation_manager.drawdown_log["blue_ships"][simulation_manager._now] = alive_blue_ships
+    simulation_manager.drawdown_log["blue_aircraft"][simulation_manager._now] = alive_blue_aircraft
+    simulation_manager.drawdown_log["red_ships"][simulation_manager._now] = alive_red_ships
+    simulation_manager.drawdown_log["red_aircraft"][simulation_manager._now] = alive_red_aircraft
+
     if simulation_manager.full_data_logging:
         simulation_manager.data_logger.dump_units_to_file(simulation_manager)
         simulation_manager.data_logger.update_formatted_unit_data(simulation_manager)

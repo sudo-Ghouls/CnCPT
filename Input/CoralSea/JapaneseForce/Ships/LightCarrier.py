@@ -4,7 +4,7 @@
 
 import itertools
 
-from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.BaseClasses.Ship import Ship
 from Input.CoralSea.JapaneseForce.Aircraft.DiveBomber import AichiD3AType99
 from Input.CoralSea.JapaneseForce.Aircraft.Fighter import A6M2Zero
 from Input.CoralSea.JapaneseForce.Aircraft.Fighter import MitsubishiA5MType96

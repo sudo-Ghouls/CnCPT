@@ -17,12 +17,15 @@ class Weapon:
         self.engagement_history_dict = {}
         self.viable_target_classes = ()
 
+    def reload(self):
+        self.engagements_conducted = 0
+
     def engage(self, parent_unit, simulation_manager):
         if self.engagements_conducted >= self.max_engagements:
             return
         targets_killed = []
         targets_in_range, ranges = simulation_manager.Geography.targets_in_range(parent_unit, self.max_range)
-        for target_name in targets_in_range:
+        for idx, target_name in enumerate(targets_in_range):
             target = simulation_manager.all_units_map[target_name]
             if not isinstance(target, self.viable_target_classes):
                 continue
@@ -33,6 +36,7 @@ class Weapon:
                 time_elapsed = simulation_manager.now - self.engagement_history_dict[target]
                 if time_elapsed >= self.engagement_rate:
                     target_killed = self.calculate_pk(simulation_manager, target=target)
+                    self.engagements_conducted += 1
                     self.update_weapon_log(target_killed, parent_unit, simulation_manager)
                     self.engagement_history_dict[target] = simulation_manager.now
                 else:
@@ -43,7 +47,13 @@ class Weapon:
                 self.engagement_history_dict[target] = simulation_manager.now
             if target_killed is True:
                 targets_killed.append(target)
-                simulation_manager.kill_log[target] = simulation_manager.now
+                simulation_manager.kill_log[target] = {"Target_Side": target.side.name,
+                                                       "Time_sec": simulation_manager.now,
+                                                       "Weapon": self.__class__.__name__,
+                                                       "Shooter": parent_unit.name,
+                                                       "Shooter_Class": parent_unit.__class__.__name__,
+                                                       "Shooter_Side": parent_unit.side.name,
+                                                       "Range_m": ranges[idx]}
 
         # now kill all the units that died in the last set of salvos
         for target_killed in targets_killed:

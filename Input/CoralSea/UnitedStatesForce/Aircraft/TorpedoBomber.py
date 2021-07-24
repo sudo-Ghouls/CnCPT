@@ -2,7 +2,7 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
 from Input.CoralSea.UnitedStatesForce.Logic.AircraftLogic import behavior_baseline
 from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualAir
 from Input.CoralSea.UnitedStatesForce.Weapons.air_to_surface import AirLaunchedTorpedo

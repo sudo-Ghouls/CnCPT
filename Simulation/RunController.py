@@ -6,6 +6,7 @@ import cProfile
 import datetime
 import io
 import os
+import pickle
 import pstats
 import random
 from pstats import SortKey
@@ -45,9 +46,9 @@ class RunController:
         except FileExistsError:
             pass
 
-    def run_set(self, CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator, VariableArchInstance, controls,
-                seeds=[0], name=None,
-                constants=None):
+    def run_set_CnCPT(self, CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator, VariableArchInstance, controls,
+                      seeds=[0], name=None,
+                      constants=None):
         """
 
         :param all_units:
@@ -113,7 +114,76 @@ class RunController:
                 "facm_red_var": np.var([set_data[seed]["facm_red"] for seed in set_data]),
                 "individual_seed_data_mean": set_data}
         data["score_mean_variance"] = data["score_mean"] - ((2 * ((data["score_var"]) ** 2)) / 2.0)
-        return data
+        return data, output_path
+
+    def run_set(self, FixedArchGenerator, VariableArchGenerator, controls,
+                seeds=[0], name=None,
+                constants=None):
+        """
+
+        :param all_units:
+        :param controls:
+        :param seeds:
+        :param name:
+        :param constants:
+        :return:
+        """
+        set_data = {}
+
+        if constants is None:
+            constants = intialize_constants()
+
+        # Generate Top level directory
+        if name is not None:
+            output_path = os.path.join(self.output_path, name)
+            try:
+                os.mkdir(output_path)
+            except FileExistsError:
+                pass
+        else:
+            output_path = self.output_path
+
+        # Generate Timestamp level directory
+        datestring = datetime.datetime.now().strftime(self.timestamp_format)
+        output_path = os.path.join(output_path, datestring)
+        try:
+            os.mkdir(output_path)
+        except FileExistsError:
+            pass
+
+        # Run Seeds
+        for seed in seeds:
+            FixedArchUnits = FixedArchGenerator()
+            VariableArchUnits = VariableArchGenerator()
+            all_units = VariableArchUnits + FixedArchUnits
+            seed_data = self.run_seed(all_units, controls, constants, seed, output_path)
+            set_data[seed] = seed_data
+
+        data = {"score_mean": np.mean([set_data[seed]["score"] for seed in set_data]),
+                "score_var": np.var([set_data[seed]["score"] for seed in set_data]),
+                "vsm_ships_mean": np.mean([set_data[seed]["vsm_ships"] for seed in set_data]),
+                "vsm_ships_var": np.var([set_data[seed]["vsm_ships"] for seed in set_data]),
+                "vsm_aircraft_mean": np.mean([set_data[seed]["vsm_aircraft"] for seed in set_data]),
+                "vsm_aircraft_var": np.var([set_data[seed]["vsm_aircraft"] for seed in set_data]),
+                "vscm_ships_mean": np.mean([set_data[seed]["vscm_ships"] for seed in set_data]),
+                "vscm_ships_var": np.var([set_data[seed]["vscm_ships"] for seed in set_data]),
+                "vscm_aircraft_mean": np.mean([set_data[seed]["vscm_aircraft"] for seed in set_data]),
+                "vscm_aircraft_var": np.var([set_data[seed]["vscm_aircraft"] for seed in set_data]),
+                "vscm_blue_mean": np.mean([set_data[seed]["vscm_blue"] for seed in set_data]),
+                "vscm_blue_var": np.var([set_data[seed]["vscm_blue"] for seed in set_data]),
+                "fam_ships_mean": np.mean([set_data[seed]["fam_ships"] for seed in set_data]),
+                "fam_ships_var": np.var([set_data[seed]["fam_ships"] for seed in set_data]),
+                "fam_aircraft_mean": np.mean([set_data[seed]["fam_aircraft"] for seed in set_data]),
+                "fam_aircraft_var": np.var([set_data[seed]["fam_aircraft"] for seed in set_data]),
+                "facm_ships_mean": np.mean([set_data[seed]["facm_ships"] for seed in set_data]),
+                "facm_ships_var": np.var([set_data[seed]["facm_ships"] for seed in set_data]),
+                "facm_aircraft_mean": np.mean([set_data[seed]["facm_aircraft"] for seed in set_data]),
+                "facm_aircraft_var": np.var([set_data[seed]["facm_aircraft"] for seed in set_data]),
+                "facm_red_mean": np.mean([set_data[seed]["facm_red"] for seed in set_data]),
+                "facm_red_var": np.var([set_data[seed]["facm_red"] for seed in set_data]),
+                "individual_seed_data_mean": set_data}
+        data["score_mean_variance"] = data["score_mean"] - ((2 * ((data["score_var"]) ** 2)) / 2.0)
+        return data, output_path
 
     def run_seed(self, all_units, controls, constants, seed, output_path):
         """
@@ -152,7 +222,15 @@ class RunController:
             unit.register(SimulationManager, constants)
 
         self.run(SimulationManager, controls)
+
         seed_data = post_process(SimulationManager)
+        if controls["full_data_logging"]:
+            log_data = {"kill_log": SimulationManager.kill_log,
+                        "isr_log": SimulationManager.isr_log,
+                        "weapon_log": SimulationManager.weapon_log,
+                        "drawdown_log": SimulationManager.drawdown_log}
+            with open(os.path.join(SimulationManager.output_path, "Simulation_Logs.pkl"), 'wb') as f:
+                pickle.dump(log_data, f)
         SimulationManager.data_logger.close_data_logger(SimulationManager)
         return seed_data
 

@@ -2,11 +2,11 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.BaseClasses.Ship import Ship
 from Input.CoralSea.UnitedStatesForce.Aircraft.DiveBomber import DouglasSBDDauntless
 from Input.CoralSea.UnitedStatesForce.Aircraft.Fighter import GrummanF4F3Wildcat
 from Input.CoralSea.UnitedStatesForce.Aircraft.TorpedoBomber import DouglasTBDDevastator
-from Input.CoralSea.UnitedStatesForce.Logic.CruiserLogic import behavior_baseline
+from Input.CoralSea.UnitedStatesForce.Logic.CarrierLogic import behavior_baseline
 from Input.CoralSea.UnitedStatesForce.Sensors.BasicRadarCXAM import BasicRadarCXAM
 from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
 from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir, DeckGunSurface

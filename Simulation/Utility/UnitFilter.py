@@ -4,6 +4,8 @@
 
 import numpy as np
 
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
+from Simulation.Units.BaseClasses.Ship import Ship
 from Simulation.Utility.SideEnum import SideEnum
 
 
@@ -51,9 +53,11 @@ class UnitFilter:
         blue = unit.side == SideEnum.BLUE
         red = unit.side == SideEnum.RED
         green = unit.side == SideEnum.GREEN
-        return unit.alive, unit.moving(), blue, red, green, unit.docked, unit.sensors is not None, unit.weapons is not None, bool(unit.contacts)
+        return unit.alive, unit.moving(), blue, red, green, unit.docked, unit.sensors is not None, unit.weapons is not None, bool(
+            unit.contacts), isinstance(unit, Ship), isinstance(unit, Aircraft)
 
 
 def create_unit_filter():
-    labels = ("alive", "moving", "blue", "red", "green", "docked", "has_sensors", "armed", "has_contacts")
+    labels = ("alive", "moving", "blue", "red", "green", "docked", "has_sensors", "armed", "has_contacts", "is_ship",
+              "is_aircraft")
     return UnitFilter(labels, UnitFilter.unit_mask)

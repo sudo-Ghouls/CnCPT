@@ -3,7 +3,7 @@
 # Fall 2020 - EM.THE
 
 
-from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
 from Simulation.Engagement.Weapon import Weapon
 
 

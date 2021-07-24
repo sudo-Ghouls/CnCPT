@@ -84,27 +84,30 @@ def generate():
     CarrierStrikingForce = UnitGroup.construct_unit_group("CarrierStrikingForce",
                                                           CarrierStrikingForceUnits,
                                                           leader=CarrierStrikingForceUnits[0],
-                                                          route=Route(CarrierStrikingForceRoute))
+                                                          route=Route(CarrierStrikingForceRoute,
+                                                                      end_time_sec=3 * 24 * 3600.0))
 
     # TulagiInvasionForce
     TulagiInvasionForceUnits = [Kinugasa(), Furutaka(), Yubari(), Tenryu(), Tatsuta(), Sazanami(), Oite(), Tsugaru(),
                                 KeijoMaru(), SeikaiMaru(), NikkaiMaru()]
     TulagiInvasionForce = UnitGroup.construct_unit_group("TulagiInvasionForce",
                                                          TulagiInvasionForceUnits, leader=TulagiInvasionForceUnits[0],
-                                                         route=Route(TulagiInvasionForceRoute))
+                                                         route=Route(TulagiInvasionForceRoute,
+                                                                     end_time_sec=3 * 24 * 3600.0))
 
     # CoveringForce
     CoveringForceUnits = [Shoho(), Aoba(), Kako(), Uzuki(), Asamagi(), Mutsuki(), Yunagi(), Yayoi()]
     CoveringForce = UnitGroup.construct_unit_group("CoveringForce",
                                                    CoveringForceUnits, leader=CoveringForceUnits[0],
-                                                   route=Route(CoveringForceRoute))
+                                                   route=Route(CoveringForceRoute, end_time_sec=3 * 24 * 3600.0))
 
     # PortMoresbyLandingForce
     PortMoresbyLandingForceUnits = [Kaikuzuki(), Yuzuki(), Okinoshima(), KoeiMaru(), AsumanMaru()]
     PortMoresbyLandingForce = UnitGroup.construct_unit_group("PortMoresbyLandingForce",
                                                              PortMoresbyLandingForceUnits,
                                                              leader=PortMoresbyLandingForceUnits[0],
-                                                             route=Route(PortMoresbyLandingForceRoute))
+                                                             route=Route(PortMoresbyLandingForceRoute,
+                                                                         end_time_sec=3 * 24 * 3600.0))
     all_units = CarrierStrikingForce + TulagiInvasionForce + CoveringForce + \
                 PortMoresbyLandingForce
     Network("JapaneseForce", all_units)

@@ -2,14 +2,9 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
 from Input.CoralSea.JapaneseForce.Sensors.Visual import VisualAir
 from Input.CoralSea.JapaneseForce.Weapons.air_to_surface import AirLaunchedBomb
-from Simulation.Communication.Message import DetectionMessage
-from Simulation.Logic.ChildLogic import return_to_parent
-from Simulation.Logic.General import determine_priority_target_contact, pursue_target
-from Simulation.Logic.Patrol import patrol
-from Simulation.Units.State import State
 from Simulation.Utility.Conversions import kts_to_ms
 from Simulation.Utility.SideEnum import SideEnum
 from Input.CoralSea.UnitedStatesForce.Logic.AircraftLogic import behavior_baseline

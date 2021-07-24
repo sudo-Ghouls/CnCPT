@@ -35,6 +35,8 @@ def dock(unit, time, refuel=True):
     unit.state_change_time = time
     unit.kinematics.reset_range_traveled()
     unit.kinematics.set_location(unit=unit.parent)
+    for weapon in unit.weapons:
+        weapon.reload()
 
 
 def undock(unit, new_state, time):

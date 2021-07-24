@@ -96,23 +96,23 @@ def generate():
                         Alywin(), Monaghan()]
 
     AttackGroup = UnitGroup.construct_unit_group("AttackGroup", AttackGroupUnits, leader=AttackGroupUnits[0],
-                                                 route=Route(AttackGroupRoute))
+                                                 route=Route(AttackGroupRoute,end_time_sec=3 * 24 * 3600.0))
 
     # CarrierGroup
     CarrierGroupUnits = [Yorktown(), Lexington(), Morris(), Anderson(), Hammann(), Russell()]
     CarrierGroup = UnitGroup.construct_unit_group("CarrierGroup", CarrierGroupUnits, leader=CarrierGroupUnits[0],
-                                                  route=Route(CarrierGroupRoute))
+                                                  route=Route(CarrierGroupRoute,end_time_sec=3 * 24 * 3600.0))
 
     # SupportGroup
     SupportGroupUnits = [Australia(), Hobart(), Chicago(), Perkins(), Walke()]
     SupportGroup = UnitGroup.construct_unit_group("SupportGroup", SupportGroupUnits, leader=SupportGroupUnits[0],
-                                                  route=Route(SupportGroupRoute))
+                                                  route=Route(SupportGroupRoute,end_time_sec=3 * 24 * 3600.0))
 
     # FuelingGroup
     FuelingGroupUnits = [Neosho(), Tippecanoe(), Sims(), Worden()]
     FuelingGroup = UnitGroup.construct_unit_group("FuelingGroup", FuelingGroupUnits,
                                                   leader=FuelingGroupUnits[0],
-                                                  route=Route(FuelingGroupRoute))
+                                                  route=Route(FuelingGroupRoute,end_time_sec=3 * 24 * 3600.0))
     all_units = AttackGroup + CarrierGroup + SupportGroup + \
                 FuelingGroup
 

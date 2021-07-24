@@ -3,7 +3,7 @@
 # Fall 2020 - EM.THE
 
 
-from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.BaseClasses.Ship import Ship
 from Simulation.Engagement.Weapon import Weapon
 
 

@@ -2,7 +2,7 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from Input.CoralSea.BaseClasses.Aircraft import Aircraft
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
 from Simulation.Communication.Message import DetectionMessage
 from Simulation.Logic.ChildLogic import return_to_parent
 from Simulation.Logic.General import determine_priority_target_contact, pursue_target

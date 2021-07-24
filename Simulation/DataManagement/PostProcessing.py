@@ -3,8 +3,8 @@
 # Fall 2020 - EM.THE
 
 
-from Input.CoralSea.BaseClasses.Aircraft import Aircraft
-from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.BaseClasses import Aircraft
+from Simulation.Units.BaseClasses.Ship import Ship
 from Simulation.Utility.SideEnum import SideEnum
 
 

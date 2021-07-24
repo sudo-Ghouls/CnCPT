@@ -35,8 +35,8 @@ from Simulation.Utility.SideEnum import SideEnum
 def ContainedRunController(output_path, CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator,
                            VariableArch, controls, constants, seeds, name):
     new_run_controller = RunController(output_path)
-    run_score = new_run_controller.run_set(CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator,
-                                           VariableArch, controls, seeds=seeds, name=name, constants=constants)
+    run_score, _ = new_run_controller.run_set_CnCPT(CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator,
+                                                    VariableArch, controls, seeds=seeds, name=name, constants=constants)
     return run_score
 
 

@@ -2,7 +2,7 @@
 # This file was created in support of the CNCPT Thesis
 # Fall 2020 - EM.THE
 
-from Input.CoralSea.BaseClasses.Ship import Ship
+from Simulation.Units.BaseClasses.Ship import Ship
 from Input.CoralSea.UnitedStatesForce.Sensors.Visual import VisualSurface
 from Input.CoralSea.UnitedStatesForce.Weapons.deck_gun import DeckGunAir
 from Simulation.Utility.Conversions import kts_to_ms

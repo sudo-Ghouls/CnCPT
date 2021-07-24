@@ -47,6 +47,10 @@ class SimulationManager(Environment):
         self.kill_log = {}
         self.isr_log = {}
         self.weapon_log = {}
+        self.drawdown_log = {"blue_ships": {},
+                             "blue_aircraft": {},
+                             "red_ships": {},
+                             "red_aircraft": {}}
 
         if constants["simulation_map_bounds"] is not None:
             self.simulation_map_bounds = constants["simulation_map_bounds"]
