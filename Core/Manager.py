@@ -10,6 +10,7 @@ import pickle
 import numpy as np
 import pp
 
+from ArchitectureGeneration.Architecture import Architecture
 from ArchitectureGeneration.ArchitectureBreeder import ArchitectureBreeder
 from ArchitectureGeneration.ArchitectureCodeGeneration import generateBaseArchCode, generateAllArchCodes
 from FitnessAssessment import FitnessCutoffEvaluation
@@ -20,24 +21,28 @@ from Simulation.RunController import RunController
 from Simulation.Utility.SideEnum import SideEnum
 
 
-# class FakeServer(object):
-#     def __init__(self, ncpus="autodetect", ppservers=()):
-#         pass
-#
-#     def submit(self, fn, params, localfunctions=None, externalmodules=None):
-#         result = fn(*params)
-#         return lambda: result
-#
-#
-# pp.Server = FakeServer
+class FakeServer(object):
+    def __init__(self, ncpus="autodetect", ppservers=()):
+        pass
+
+    def submit(self, fn, params, localfunctions=None, externalmodules=None):
+        result = fn(*params)
+        return lambda: result
+
+
+pp.Server = FakeServer
 
 
 def ContainedRunController(output_path, CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator,
                            VariableArch, controls, constants, seeds, name):
     new_run_controller = RunController(output_path)
-    run_score, _ = new_run_controller.run_set_CnCPT(CONOPCon, CompCon, LeadershipPriority, FixedArchGenerator,
-                                                    VariableArch, controls, seeds=seeds, name=name, constants=constants)
-    return run_score
+    performance_data, set_output_path = new_run_controller.run_set_CnCPT(CONOPCon, CompCon, LeadershipPriority,
+                                                                         FixedArchGenerator,
+                                                                         VariableArch, controls, seeds=seeds, name=name,
+                                                                         constants=constants)
+    with open(os.path.join(set_output_path, "Simulation_Set_Log.pkl"), 'wb') as f:
+        pickle.dump(performance_data, f)
+    return performance_data
 
 
 class Manager:
@@ -57,6 +62,7 @@ class Manager:
         self.conop_con_list = None
         self.max_conop_per_unit = None
         self.base_arch_code = generateBaseArchCode(self)
+        self.CnCPT_family_tree = []
 
         # Model Related
         self.results = {}
@@ -78,7 +84,8 @@ class Manager:
         self.generation = 1
         self.generations_prior_to_breeding = 3
 
-    def runCnCPT(self, controls, constants, run_size=10, output_path='', breed_method="crossover"):
+    def runCnCPT(self, controls, constants, run_size=10, output_path='', breed_method="crossover",
+                 breeding_metric="score_mean"):
         try:
             os.mkdir(output_path)
         except FileExistsError:
@@ -111,12 +118,8 @@ class Manager:
             sample_results = self.runPopulationSample(self.generation, population_sample, controls, constants,
                                                       output_path,
                                                       my_breeder)
-            self.updateResults(population_sample, sample_results, my_breeder, self.generation)
 
-            # Update Prediction Models
-            # if generation > self.minimum_generations_for_prediction:
-            #     self.model_manager.update_models(generation, population_sample, sample_results,
-            #                                      self.model_features, self.labels_class, self.labels_reg)
+            self.updateResults(population_sample, sample_results, my_breeder, self.generation, metric=breeding_metric)
 
             # Asses Cutoff parameters
             utility = FitnessUtilityCalculation.process(self.model_features, self.labels_class, self.labels_reg)
@@ -125,6 +128,25 @@ class Manager:
             satisfied = self.determine_satisfaction(utility, variance, cutoff, self.generation)
 
             self.generation += 1
+        with open(os.path.join(self.output_path, "CnCPT_Family_Tree.pkl"), 'wb') as f:
+            pickle.dump(self.CnCPT_family_tree, f)
+
+    def runSpecificCode(self, controls, constants, ArchName, ArchCode, ArchSide, seeds, output_path,
+                        contains_neg_1=True):
+        if contains_neg_1:
+            ArchCode = ArchCode.replace('-1', '-')
+        VariableArchRef = Architecture.create_arch_from_string(ArchCode, self.CONOPCon, self.CompCon,
+                                                               self.LeadershipPriority, ArchSide, ArchName)
+        VariableArchRef.generate_arch_figures(output_path)
+        new_run_controller = RunController(output_path)
+        performance_data, set_output_path = new_run_controller.run_set_CnCPT(self.CONOPCon, self.CompCon,
+                                                                             self.LeadershipPriority,
+                                                                             self.FixedArchGenerator, VariableArchRef,
+                                                                             controls, seeds=seeds,
+                                                                             name=VariableArchRef.name,
+                                                                             constants=constants)
+        with open(os.path.join(set_output_path, "Simulation_Set_Log.pkl"), 'wb') as f:
+            pickle.dump(performance_data, f)
 
     def runPopulationSample(self, generation, population_sample, controls, constants, output_path, my_breeder):
         # run Simulation on Architectures
@@ -133,7 +155,6 @@ class Manager:
               "**** Running Generation {0} ****\n"
               "-----------------------------------".format(generation))
         for job_idx, VariableArch in enumerate(population_sample):
-            FixedArchUnits = self.FixedArchGenerator()
             controls['architecture_name'] = VariableArch.name
             print("Starting Simulation Job {0}: {1}".format(job_idx, VariableArch.name))
             jobs.append(self.server.submit(ContainedRunController,
@@ -151,19 +172,17 @@ class Manager:
             print("- Job {0} Finished".format(job_idx))
         return results
 
-    def updateResults(self, population_sample, population_results, my_breeder, generation):
-        my_breeder.updateLastGeneration(population_sample, population_results)
+    def updateResults(self, population_sample, population_results, my_breeder, generation, metric="score_mean"):
+        my_breeder.updateLastGeneration(population_sample, population_results, metric)
         self.results[generation] = {}
         # Update breeder and model results
         for arch_idx, arch in enumerate(population_sample):
-            arch_score_mean = population_results[arch_idx]["score_mean"]
-            arch_score_var = population_results[arch_idx]["score_var"]
-            arch_score_mean_var = population_results[arch_idx]["score_mean_variance"]
-            arch_result = arch_score_mean_var
-            CodeString = str(arch.code).replace(' ', '').replace('\n', '').replace('None', '-')
+            arch_result = population_results[arch_idx][metric]
+            CodeString = str(arch.ArchCode).replace(' ', '').replace('\n', '').replace('None', '-')
             self.results[generation][CodeString] = population_results[arch_idx]  # save off all results
             my_breeder.Architectures[CodeString] = arch_result
-            arch_features = self.add_aggregate_features(arch.code)
+            arch_features = self.add_aggregate_features(arch.ArchCode)
+            self.CnCPT_family_tree.append([CodeString, arch.parents, generation, arch_result])
 
             if self.model_features is None:
                 self.model_features = arch_features
@@ -188,7 +207,7 @@ class Manager:
             return True
         if self.cutoff_metric is not None and cutoff > self.cutoff_metric:
             return True
-        if generation > self.max_generations:
+        if generation >= self.max_generations:
             return True
         return False
 
@@ -196,40 +215,7 @@ class Manager:
         """ This method adds additonal featurs to the arch code based on aggregation of units, behaviors, and geometries
         realized.
         """
-        start_idx, unit_idxs, num_units_realized, realized_unit_idxs = 0, {}, {}, {}
-        unit_behaviors, unit_geometries = {}, {}
-        comp_con = self.CompCon
-        conop_con = self.CONOPCon
         full_arch_code = np.array(arch_code)
-        #
-        # for unit in conop_con.units:
-        #     unit_behaviors[unit] = np.zeros((1, conop_con.units[unit].maxNumConop))[0]
-        #
-        # for unit in comp_con.units:
-        #     unit_info = comp_con.units[unit]
-        #     end_idx = start_idx + (unit_info.maxNumber * 2)
-        #     unit_idxs[unit] = (start_idx, end_idx)
-        #     start_idx = end_idx
-        #     unit_geometries[unit] = np.zeros((1, len(comp_con.units[unit].Polygons)))[0]
-        # for unit in unit_idxs:
-        #     unit_idx = unit_idxs[unit]
-        #     unit_arch_code_section = full_arch_code[unit_idx[0]:unit_idx[1]]
-        #     num_units_realized[unit] = int(len([i for i in unit_arch_code_section if i >= 0]) / 2)
-        #     realized_unit_idxs[unit] = [i for i in range(unit_idx[0], unit_idx[1]) if full_arch_code[i] >= 0]
-        # new_code_section_units_realized = np.array([num_units_realized[unit] for unit in num_units_realized])
-        # for unit in realized_unit_idxs:
-        #     i = 0
-        #     for _ in range(int(len(realized_unit_idxs[unit]) / 2)):
-        #         behavior = full_arch_code[realized_unit_idxs[unit][i]]
-        #         unit_behaviors[unit][behavior] += 1
-        #         geometry = full_arch_code[realized_unit_idxs[unit][i + 1]]
-        #         unit_geometries[unit][geometry] += 1
-        #         i += 2
-        # new_code_section_behaviors_realized = np.hstack([unit_behaviors[unit] for unit in unit_behaviors])
-        # new_code_section_geometry_realized = np.hstack([unit_geometries[unit] for unit in unit_geometries])
-        # new_code_features = np.hstack(
-        #     (new_code_section_units_realized, new_code_section_behaviors_realized, new_code_section_geometry_realized))
-        # full_arch_code = np.hstack((full_arch_code, new_code_features))
         full_arch_code = full_arch_code.astype(int)
         return full_arch_code
 

@@ -14,6 +14,7 @@ class Destroyer(Ship):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
                          side=side, route=route, parent=parent, network=network, group_data=group_data,
                          kinematics_data=kinematics_data)
+        self.my_type = "Destroyer"
         self.cost = 200
         self.add_weapon(DeckGunAir, 1000)
         self.add_weapon(DeckGunSurface, 1000)

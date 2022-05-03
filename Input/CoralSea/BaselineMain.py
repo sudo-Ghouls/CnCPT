@@ -25,7 +25,7 @@ if __name__ == "__main__":
     baseline_performance_data, set_output_path = RunController(output_path).run_set(BaselineJapaneseForce,
                                                                                     BaselineUSForce, controls,
                                                                                     constants=constants,
-                                                                                    seeds=range(10),
+                                                                                    seeds=range(50),
                                                                                     name="Baseline")
     with open(os.path.join(set_output_path, "Simulation_Set_Log.pkl"), 'wb') as f:
         pickle.dump(baseline_performance_data, f)

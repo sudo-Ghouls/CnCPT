@@ -4,6 +4,7 @@
 
 
 import sys
+import uuid
 
 
 class Weapon:
@@ -26,6 +27,8 @@ class Weapon:
         targets_killed = []
         targets_in_range, ranges = simulation_manager.Geography.targets_in_range(parent_unit, self.max_range)
         for idx, target_name in enumerate(targets_in_range):
+            if self.engagements_conducted >= self.max_engagements:
+                return
             target = simulation_manager.all_units_map[target_name]
             if not isinstance(target, self.viable_target_classes):
                 continue
@@ -35,25 +38,31 @@ class Weapon:
                 # check if unit has been shot at yet,
                 time_elapsed = simulation_manager.now - self.engagement_history_dict[target]
                 if time_elapsed >= self.engagement_rate:
-                    target_killed = self.calculate_pk(simulation_manager, target=target)
+                    target_killed, pk_diceroll = self.calculate_pk(simulation_manager, target=target)
                     self.engagements_conducted += 1
-                    self.update_weapon_log(target_killed, parent_unit, simulation_manager)
+                    self.update_weapon_log(target_killed, parent_unit, simulation_manager, ranges[idx], target,
+                                           pk_diceroll)
                     self.engagement_history_dict[target] = simulation_manager.now
                 else:
                     continue
             else:
-                target_killed = self.calculate_pk(simulation_manager, target=target)
-                self.update_weapon_log(target_killed, parent_unit, simulation_manager)
+                target_killed, pk_diceroll = self.calculate_pk(simulation_manager, target=target)
+                self.update_weapon_log(target_killed, parent_unit, simulation_manager, ranges[idx], target, pk_diceroll)
                 self.engagement_history_dict[target] = simulation_manager.now
+                self.engagements_conducted += 1
             if target_killed is True:
                 targets_killed.append(target)
-                simulation_manager.kill_log[target] = {"Target_Side": target.side.name,
-                                                       "Time_sec": simulation_manager.now,
-                                                       "Weapon": self.__class__.__name__,
-                                                       "Shooter": parent_unit.name,
-                                                       "Shooter_Class": parent_unit.__class__.__name__,
-                                                       "Shooter_Side": parent_unit.side.name,
-                                                       "Range_m": ranges[idx]}
+                simulation_manager.kill_log[target] = {"target": target.name,
+                                                       "target_side": target.side.name,
+                                                       "target_class": target.__class__.__name__,
+                                                       "target_type": target.my_type,
+                                                       "time_sec": simulation_manager.now,
+                                                       "weapon": self.__class__.__name__,
+                                                       "shooter": parent_unit.name,
+                                                       "shooter_side": parent_unit.side.name,
+                                                       "shooter_class": parent_unit.__class__.__name__,
+                                                       "shooter_type": parent_unit.my_type,
+                                                       "range_m": ranges[idx]}
 
         # now kill all the units that died in the last set of salvos
         for target_killed in targets_killed:
@@ -63,29 +72,25 @@ class Weapon:
     def calculate_pk(self, simulation_manager, **kwargs):
         dice_roll = simulation_manager.random.random_sample()
         if dice_roll < self.pk:
-            return True
-        return False
+            return True, dice_roll
+        return False, dice_roll
 
-    def update_weapon_log(self, target_killed, parent_unit, simulation_manager):
-        try:
-            if target_killed:
-                simulation_manager.weapon_log[parent_unit.side][self]['Success'] += 1
-            else:
-                simulation_manager.weapon_log[parent_unit.side][self]['Failure'] += 1
-        except KeyError:
-            try:
-                if target_killed:
-                    simulation_manager.weapon_log[parent_unit.side][self]['Success'] = 1
-                else:
-                    simulation_manager.weapon_log[parent_unit.side][self]['Failure'] = 1
-            except KeyError:
-                try:
-                    if target_killed:
-                        simulation_manager.weapon_log[parent_unit.side][self] = {'Success': 1}
-                    else:
-                        simulation_manager.weapon_log[parent_unit.side][self] = {'Failure': 1}
-                except KeyError:
-                    if target_killed:
-                        simulation_manager.weapon_log[parent_unit.side] = {self: {'Success': 1}}
-                    else:
-                        simulation_manager.weapon_log[parent_unit.side] = {self: {'Failure': 1}}
+    def update_weapon_log(self, target_killed, parent_unit, simulation_manager, range, target, pk_diceroll):
+        engagement_uuid = uuid.uuid1()
+        plat, plon = parent_unit.kinematics.get_location()
+        tlat, tlon = target.kinematics.get_location()
+        simulation_manager.weapon_log[engagement_uuid] = {"target_killed": target_killed,
+                                                          "pk_diceroll": pk_diceroll,
+                                                          "shooter_side": parent_unit.side.name,
+                                                          "shooter_name": parent_unit.name,
+                                                          "shooter_class": parent_unit.__class__.__name__,
+                                                          "shooter_type": parent_unit.my_type,
+                                                          "shooter_location_lat": plat,
+                                                          "shooter_location_lon": plon,
+                                                          "range": range,
+                                                          "target_side": target.side.name,
+                                                          "target_name": target.name,
+                                                          "target_class": target.__class__.__name__,
+                                                          "target_type": target.my_type,
+                                                          "target_location_lat": tlat,
+                                                          "target_location_lon": tlon}

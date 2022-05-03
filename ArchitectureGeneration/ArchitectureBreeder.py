@@ -33,7 +33,7 @@ class ArchitectureBreeder:
             # Apply Heuristics
             if manager.HeurCon is not None:
                 for heuristic in manager.HeurCon:
-                    HeuBool = manager.HeurCon[heuristic](ArchitectureInstance)
+                    HeuBool = manager.HeurCon[heuristic].evaluate(ArchitectureInstance)
                     if HeuBool is True:
                         self.Architectures[NewCodeString] = None
                         population_sample.append(ArchitectureInstance)
@@ -92,6 +92,8 @@ class ArchitectureBreeder:
         loops = 0
         while loops < 100:
             NewCode = []
+            parents_choice = np.random.choice(len(parents), size=2, replace=False)
+            parents = [parents[parents_choice[0]],parents[parents_choice[1]]]
             for gene_idx in range(0, int(len(self.BaseArchCode)), 2):
                 parent_choice = np.random.randint(len(parents))
                 gene_choice = list(parents[parent_choice][gene_idx:gene_idx + 2])
@@ -100,7 +102,12 @@ class ArchitectureBreeder:
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
                 str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
-            ArchitectureInstance = Architecture(None, ArchitectureName, side, NewCode)
+            parent_1_code = str(parents[0]).replace(' ', '').replace('\n', '').replace('None', '-')
+            parent_2_code = str(parents[1]).replace(' ', '').replace('\n', '').replace('None', '-')
+            ArchitectureInstance = Architecture.create_from_code(NewCode, manager.CONOPCon, manager.CompCon,
+                                                                 manager.LeadershipPriority, side, ArchitectureName,
+                                                                 parents=[parent_1_code, parent_2_code])
+
             if NewCodeString not in self.Architectures.keys():
                 loops = 0
                 self.Architectures[NewCodeString] = None
@@ -120,8 +127,11 @@ class ArchitectureBreeder:
             NewCodeString = str(NewCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureName = "Architecture {0}".format(
                 str(NewCode).replace(' ', '').replace('\n', '').replace('-1', '-'))
+            parent_1_code = str(parents[parents_choice[0]]).replace(' ', '').replace('\n', '').replace('None', '-')
+            parent_2_code = str(parents[parents_choice[1]]).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchitectureInstance = Architecture.create_from_code(NewCode, manager.CONOPCon, manager.CompCon,
-                                                                 manager.LeadershipPriority, side, ArchitectureName)
+                                                                 manager.LeadershipPriority, side, ArchitectureName,
+                                                                 parents=[parent_1_code, parent_2_code])
             if NewCodeString not in self.Architectures.keys():
                 self.Architectures[NewCodeString] = None
                 return ArchitectureInstance, False
@@ -137,14 +147,14 @@ class ArchitectureBreeder:
             population_sample.append(ArchitectureInstance)
         return population_sample
 
-    def updateLastGeneration(self, generation_architectures, generation_results):
-        scores = [generation["score_mean_variance"] for generation in generation_results]
+    def updateLastGeneration(self, generation_architectures, generation_results, metric="score_mean"):
+        scores = [generation[metric] for generation in generation_results]
         data, ArchCodes = {}, []
         for idx, arch in enumerate(generation_architectures):
-            ArchCodeString = str(arch.code).replace(' ', '').replace('\n', '').replace('None', '-')
+            ArchCodeString = str(arch.ArchCode).replace(' ', '').replace('\n', '').replace('None', '-')
             ArchResult = scores[idx]
             data[ArchCodeString] = ArchResult
-            ArchCodes.append(arch.code)
+            ArchCodes.append(arch.ArchCode)
         self.LastGenerationDataDict = data
         self.LastGenerationArchCodes = ArchCodes
         self.LastGenerationRawResults = np.array(scores)

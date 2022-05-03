@@ -4,5 +4,8 @@
 
 
 class HeuristicCon:
-    def __init__(self):
-        pass
+    def __init__(self, data):
+        self.data = data
+
+    def evaluate(self, ArchitectureInstance):
+        return True

@@ -96,21 +96,39 @@ def init_function():
 def animate(idx):
     time = list(unit_data.keys())[idx]
     for unit in unit_data[time]:
+        if "Douglas" in unit:
+            t_memory = 10
+        elif "Grumman" in unit:
+            t_memory = 10
+        elif "Aichi" in unit:
+            t_memory = 10
+        elif "Naka" in unit:
+            t_memory = 10
+        elif "A6M" in unit:
+            t_memory = 10
+        elif "Mitsubishi" in unit:
+            t_memory = 10
+        else:
+            t_memory = 100
         if unit_data[time][unit]['alive']:
             new_x = unit_data[time][unit]['location_y']
             new_y = unit_data[time][unit]['location_x']
             unit_lines[unit]["x_data"].append(new_x)
             unit_lines[unit]["y_data"].append(new_y)
-            unit_lines[unit]["x_data"] = unit_lines[unit]["x_data"][-10:]
-            unit_lines[unit]["y_data"] = unit_lines[unit]["y_data"][-10:]
+            # unit_lines[unit]["x_data"] = unit_lines[unit]["x_data"][-10:]
+            # unit_lines[unit]["y_data"] = unit_lines[unit]["y_data"][-10:]
+            unit_lines[unit]["x_data"] = unit_lines[unit]["x_data"][-t_memory:]
+            unit_lines[unit]["y_data"] = unit_lines[unit]["y_data"][-t_memory:]
             unit_lines[unit]["lineObj"].set_data(unit_lines[unit]["x_data"], unit_lines[unit]["y_data"])
         else:
             new_x = unit_data[time][unit]['location_y']
             new_y = unit_data[time][unit]['location_x']
-            unit_lines[unit]["x_data"] = [new_x]
-            unit_lines[unit]["y_data"] = [new_y]
+            unit_lines[unit]["x_data"] = []
+            unit_lines[unit]["y_data"] = []
+            unit_lines[unit]["lineObj"].set_data(unit_lines[unit]["x_data"], unit_lines[unit]["y_data"])
             new_lobj = ax.plot(new_x, new_y, lw=5, color="k", marker='X')[0]
             unit_lines[unit]["lineObj"] = new_lobj
+
 
     if idx == len(unit_data.keys()) - 1:
         for idx, name in enumerate(unit_names):
@@ -120,7 +138,7 @@ def animate(idx):
     return [unit_lines[unit]['lineObj'] for unit in unit_lines.keys()]
 
 
-ani = matplotlib.animation.FuncAnimation(fig, animate, init_func=init_function, frames=len(unit_data.keys()),
+ani = matplotlib.animation.FuncAnimation(fig, animate, init_func=init_function, frames=int(len(unit_data.keys())),
                                          interval=100, repeat=False, save_count=len(unit_data.keys()))
 
 

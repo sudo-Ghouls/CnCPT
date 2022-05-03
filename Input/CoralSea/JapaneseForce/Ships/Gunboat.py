@@ -13,6 +13,7 @@ class Gunboat(Ship):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
                          side=side, route=route, parent=parent, network=network, group_data=group_data,
                          kinematics_data=kinematics_data)
+        self.my_type = "Gunboat"
         self.cost = 50
 
     @staticmethod

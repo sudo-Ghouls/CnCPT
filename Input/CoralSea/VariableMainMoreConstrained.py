@@ -67,9 +67,9 @@ if __name__ == "__main__":
     # Initialize Manager
     filepath = os.getcwd()
     MyManager = Manager(filepath, MyCompsCon, MyCONOPsCOn, MyHeurCon, BaselineJapaneseForce, LeadershipPriority,
-                        MC_size=3)
+                        MC_size=1)
     controls = {"start_time": 0.0,
-                "end_time": 1 * 24 * 3600.0,
+                "end_time": 3 * 24 * 3600.0,
                 "utility_threshold": .9,
                 "variance_threshold": .001,
                 "cutoff_metric": 10000,
@@ -83,4 +83,4 @@ if __name__ == "__main__":
                                            (-18.02904145799271, 149.9831854228132))}
 
     MyManager.runCnCPT(controls, constants, run_size=30,
-                       output_path=r"D:\Thesis\CoralSeaConstrained_MC_3_Gen_15_RS_30_80FACM_20SVSCM")
+                       output_path=r"D:\Thesis\CnCPT_Tests\CoralSeaConstrained_MC_1_Gen_15_RS_30_80FACM_20SVSCM_Mean")

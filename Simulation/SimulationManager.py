@@ -10,7 +10,7 @@ from Simulation.Communication.core import communicate
 from Simulation.DataManagement.DataLogging import DataLogger, log, update_status_bar
 from Simulation.Engagement.core import adjudicate
 from Simulation.GeographyPhysics.Geography import Geography, propagate
-from Simulation.Sensing.core import sense, update_unit_contacts
+from Simulation.Sensing.core import sense, update_system_contacts
 from Simulation.Units.core import spawn, update_state
 from Simulation.Utility.UnitFilter import create_unit_filter
 
@@ -104,7 +104,7 @@ class SimulationManager(Environment):
         update_state(self)
         adjudicate(self)
         sense(self)
-        update_unit_contacts(self)
+        update_system_contacts(self)
         communicate(self)
         spawn(self)
         propagate(self)

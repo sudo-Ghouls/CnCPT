@@ -40,10 +40,14 @@ def MaximumIdxFromCons(simulation_manager, NumLocPolys, MaxConopPerUnit):
 
 def GenerateArchCode(BaseArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):
     possible_arch_codes, arch_codes = [], []
-
+    ref_unit_code = generate_unit_code_map(LowerBoundPerUnit, UpperBoundPerUnit)
     for Col in range(len(BaseArchCode)):
         if Col % 2 == 0:
-            options = [-1] + list(range(BaseArchCode[Col]))  # Behavior Choice
+            ref_unit = ref_unit_code[Col]
+            if LowerBoundPerUnit[ref_unit] == UpperBoundPerUnit[ref_unit]:
+                options = list(range(BaseArchCode[Col]))
+            else:
+                options = [-1] + list(range(BaseArchCode[Col]))  # Behavior Choice
         else:
             options = list(range(BaseArchCode[Col]))
         if len(possible_arch_codes) == 0:
@@ -66,6 +70,18 @@ def GenerateArchCode(BaseArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocP
     arch_codes = np.reshape(arch_codes, (int(int(len(arch_codes)) / len(BaseArchCode)), len(BaseArchCode)))
     arch_codes = pd.DataFrame(arch_codes).drop_duplicates().values
     return arch_codes
+
+
+def generate_unit_code_map(LowerBoundPerUnit, UpperBoundPerUnit):
+    ref_unit_code = []
+    start_idx = 0
+    for Unit_i in range(len(LowerBoundPerUnit)):
+        max_num_of_unit_i = UpperBoundPerUnit[Unit_i]
+        end_idx = start_idx + max_num_of_unit_i * 2
+        unit_id_array = [Unit_i] * (end_idx - start_idx)
+        ref_unit_code += (unit_id_array)
+        start_idx = end_idx
+    return ref_unit_code
 
 
 def ValidArch(ArchCode, LowerBoundPerUnit, UpperBoundPerUnit, NumLocPolys, MaxConopPerUnit):

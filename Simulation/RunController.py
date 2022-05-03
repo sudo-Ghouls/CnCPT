@@ -84,7 +84,7 @@ class RunController:
         # Run Seeds
         for seed in seeds:
             FixedArchUnits = FixedArchGenerator()
-            VariableArch = Architecture.create_from_code(VariableArchInstance.code, CONOPCon, CompCon,
+            VariableArch = Architecture.create_from_code(VariableArchInstance.ArchCode, CONOPCon, CompCon,
                                                          LeadershipPriority, VariableArchInstance.side,
                                                          VariableArchInstance.name)
             all_units = VariableArch.units + FixedArchUnits
@@ -120,8 +120,6 @@ class RunController:
                 seeds=[0], name=None,
                 constants=None):
         """
-
-        :param all_units:
         :param controls:
         :param seeds:
         :param name:

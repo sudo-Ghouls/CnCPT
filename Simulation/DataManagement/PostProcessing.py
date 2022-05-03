@@ -3,7 +3,7 @@
 # Fall 2020 - EM.THE
 
 
-from Simulation.Units.BaseClasses import Aircraft
+from Simulation.Units.BaseClasses.Aircraft import Aircraft
 from Simulation.Units.BaseClasses.Ship import Ship
 from Simulation.Utility.SideEnum import SideEnum
 

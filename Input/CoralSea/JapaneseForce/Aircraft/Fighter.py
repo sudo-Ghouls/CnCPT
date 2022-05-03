@@ -16,6 +16,7 @@ class Fighter(Aircraft):
         super().__init__(name=name, behavior=behavior, location=location, spawn_polygon=spawn_polygon,
                          side=side, route=route, parent=parent, network=network, group_data=group_data,
                          kinematics_data=kinematics_data)
+        self.my_type = "Fighter"
         self.cost = 10
         self.refueling_length = 10 * 60 * 60  # 10 hour
         self.add_sensor(VisualAir())

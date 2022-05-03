@@ -20,7 +20,7 @@ def sense(simulation_manager, max_retention_time=12000):
             unit.contacts.update(sensor.contacts)
 
 
-def update_unit_contacts(simulation_manager, max_retention_time=12000):
+def update_system_contacts(simulation_manager, max_retention_time=12000):
     """
         removes old (based on max retention time and dead contacts from a units contact list (cheats using truth
         data)
